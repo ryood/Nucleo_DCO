@@ -4,7 +4,6 @@ etc/
 *.raw
 *.net
 
-
 #PSoC Creator
 CortexM0/
 CortexM3/
@@ -12,6 +11,7 @@ Export/
 Generated_Source/
 codegentemp/
 *.nerdfloor
+*.gizmo
 
 #Atmel Studio
 Debug/
@@ -19,6 +19,9 @@ Debug/
 #visual Studio
 Debug/
 ipch/
+
+#mbed-cli
+BUILD/
 
 # Ignore list for Eagle, a PCB layout tool
 
