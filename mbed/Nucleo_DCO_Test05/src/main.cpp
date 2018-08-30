@@ -8,6 +8,7 @@
 */
 #include "mbed.h"
 #include "u8g2.h"
+#include <math.h>
 
 #include "wavetable_12bit_32k.h"
 #define COUNT_OF_ENTRIES  (32768)
@@ -38,7 +39,11 @@ Ticker ticker;
 // DDS
 const double refclk = 100000;  // 100kHz
 double drate[OSC_NUM]          // output rate (Hz)
-	= { 1000.0, 2000.0, 3000.0 };
+	= { 1000.0, 2000.0, 1000.0 };
+float amplitude[OSC_NUM]       // output amplitude (0.0 ~ 1.0)
+	= { 0.5f, 0.5f, 0.0f };
+float phase[OSC_NUM]           // output phase (0.0 ~ 1.0)
+	= { 0.0f, 0.5f, 0.0f };
 	
 volatile uint32_t phaccu[OSC_NUM];
 volatile uint32_t tword_m[OSC_NUM];
@@ -72,16 +77,25 @@ void update()
     CheckPin1.write(1);
 #endif
 
-	uint32_t sum = 0;
+	int32_t sum = 0;
 	for (int i = 0; i < OSC_NUM; i++) {
-		phaccu[i] = phaccu[i] + tword_m[i];
+		uint32_t phi = tword_m[i] * phase[i];
+		phaccu[i] = phaccu[i] + tword_m[i] + phi;
 		uint16_t idx = phaccu[i] >> 17;  // use upper 15 bits
 
 		// Mix
-		sum += sin_12bit_32k[idx];
+		sum += sin_12bit_32k[idx] * amplitude[i];
 	}
 	
-	sum = sum / OSC_NUM;
+	// sum = sum / OSC_NUM;
+	
+	// limiter
+	if (sum < 0) {
+		sum = 0;
+	}
+	else if (sum > 4095) {
+		sum = 4095;
+	}
 
 	internalDacWrite(1, (uint16_t)sum);
 
@@ -113,8 +127,11 @@ int main()
 #if (UART_TRACE)
 	printf("\r\n%s\r\n", TITLE_STR1);
 	printf("%s\r\n", TITLE_STR2);
-	printf("System Clock: %d Hz\r\n", SystemCoreClock);
-	printf("CLOCKS_PER_SEC: %ld\n", CLOCKS_PER_SEC); 
+	printf("UINT32_MAX: %u\r\n", UINT32_MAX);
+	printf("System Clock: %lu Hz\r\n", SystemCoreClock);
+	printf("CLOCKS_PER_SEC: %d\n", CLOCKS_PER_SEC);
+
+	wait(1.0);
 #endif
 
 	for (int i = 0; i < OSC_NUM; i++) {
