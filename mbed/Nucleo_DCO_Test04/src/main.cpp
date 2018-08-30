@@ -13,7 +13,7 @@
 #define COUNT_OF_ENTRIES  (32768)
 
 #define PIN_CHECK   (1)
-#define UART_TRACE  (0)
+#define UART_TRACE  (1)
 #define TITLE_STR1  ("DCO Test04")
 #define TITLE_STR2  ("2018.08.30")
 
@@ -102,8 +102,10 @@ void u8g2Initialize()
 int main()
 {
 #if (UART_TRACE)
-	printf("%s\r\n", TITLE_STR1);
+	printf("\r\n%s\r\n", TITLE_STR1);
 	printf("%s\r\n", TITLE_STR2);
+	printf("System Clock: %d Hz\r\n", SystemCoreClock);
+	printf("CLOCKS_PER_SEC: %ld\n", CLOCKS_PER_SEC); 
 #endif
 
     tword_m = pow(2.0, 32) * drate / refclk;  // calculate DDS tuning word;
@@ -113,23 +115,27 @@ int main()
     ticker.attach_us(&update, interruptPeriodUs);
 
 	u8g2Initialize();
-	wait(3.0);
+	wait(2.0);
     
 	int count = 0;
 	char strBuffer[20];
+	Timer t;
+	t.start();
     while (1) {
 #if (PIN_CHECK)
 		CheckPin2.write(1);
 #endif
 
-		sprintf(strBuffer, "%08d", count);
-		count++;
-		
+		float elapse_time = t.read();
 		u8g2_ClearBuffer(&myScreen);
 		u8g2_SetFont(&myScreen, u8g2_font_10x20_mf);
-		u8g2_DrawStr(&myScreen, 0, 16, "Count Up");
+		sprintf(strBuffer, "%.1f %.1fs", count/elapse_time, elapse_time);
+		u8g2_DrawStr(&myScreen, 0, 16, strBuffer);
+		sprintf(strBuffer, "%08d", count);
 		u8g2_DrawStr(&myScreen, 0, 32, strBuffer);
 		u8g2_SendBuffer(&myScreen);
+
+		count++;
 
 #if (PIN_CHECK)
 		CheckPin2.write(0);
