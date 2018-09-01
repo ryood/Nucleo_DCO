@@ -79,9 +79,11 @@ void update()
 
 	int32_t sum = 0;
 	for (int i = 0; i < OSC_NUM; i++) {
-		uint32_t phi = tword_m[i] * phase[i];
-		phaccu[i] = phaccu[i] + tword_m[i] + phi;
-		uint16_t idx = phaccu[i] >> 17;  // use upper 15 bits
+
+		phaccu[i] = phaccu[i] + tword_m[i];
+
+		uint32_t phi = UINT32_MAX * phase[i];
+		uint16_t idx = (phaccu[i] + phi) >> 17;  // use upper 15 bits
 
 		// Mix
 		sum += sin_12bit_32k[idx] * amplitude[i];
@@ -127,14 +129,15 @@ int main()
 #if (UART_TRACE)
 	printf("\r\n%s\r\n", TITLE_STR1);
 	printf("%s\r\n", TITLE_STR2);
-	printf("UINT32_MAX: %u\r\n", UINT32_MAX);
+	printf("UINT32_MAX: %lu\r\n", UINT32_MAX);
 	printf("System Clock: %lu Hz\r\n", SystemCoreClock);
-	printf("CLOCKS_PER_SEC: %d\n", CLOCKS_PER_SEC);
+	printf("CLOCKS_PER_SEC: %d\r\n", CLOCKS_PER_SEC);
 
 	wait(1.0);
 #endif
 
 	for (int i = 0; i < OSC_NUM; i++) {
+		phaccu[i] = 0;
 		tword_m[i] = pow(2.0, 32) * drate[i] / refclk;  // calculate DDS tuning word;
 	}
     
