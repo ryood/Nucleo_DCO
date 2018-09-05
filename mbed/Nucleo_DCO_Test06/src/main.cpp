@@ -19,9 +19,9 @@
 #define TITLE_STR1  ("DCO Test06")
 #define TITLE_STR2  ("2018.09.01")
 
-#define OSC_NUM  (3)
-
-#define SPI1_CLOCK   (2000000)
+#define OSC_NUM    (3)
+#define REF_CLOCK  (100000.0)  // Sampling Rate
+#define SPI1_CLOCK (2000000)
 
 // Pin Assign
 AnalogOut Dac1(PA_4);
@@ -38,21 +38,20 @@ u8g2_t U8g2Handler;
 
 // MCP3008
 //SPI (PinName mosi, PinName miso, PinName sclk, PinName ssel=NC)
-SPI SpiM(D11, D12, D13);
-MCP3008 Mcp3008_0(&SpiM, D10);
-MCP3008 Mcp3008_1(&SpiM, D9);
+SPI SpiM1(D11, D12, D13);
+MCP3008 Mcp3008_0(&SpiM1, D10);
+MCP3008 Mcp3008_1(&SpiM1, D9);
 
 // Interruput
 Ticker ticker;
 
 // DDS
-const double refclk = 100000;  // 100kHz
 double drate[OSC_NUM]          // output rate (Hz)
-	= { 1000.0, 2000.0, 1000.0 };
+	= { 100.0, 200.0, 400.0 };
 float amplitude[OSC_NUM]       // output amplitude (0.0 ~ 1.0)
-	= { 0.5f, 0.5f, 0.0f };
+	= { 0.5f, 0.3f, 0.2f };
 float phase[OSC_NUM]           // output phase (0.0 ~ 1.0)
-	= { 0.0f, 0.5f, 0.0f };
+	= { 0.0f, 0.0f, 0.0f };
 	
 volatile uint32_t phaccu[OSC_NUM];
 volatile uint32_t tword_m[OSC_NUM];
@@ -126,11 +125,6 @@ void u8g2Initialize()
 	u8g2_InitDisplay(&U8g2Handler);
 	u8g2_SetPowerSave(&U8g2Handler, 0);
 	u8g2_ClearBuffer(&U8g2Handler);
-
-	u8g2_SetFont(&U8g2Handler, u8g2_font_10x20_mf);
-	u8g2_DrawStr(&U8g2Handler, 0, 16, TITLE_STR1);
-	u8g2_DrawStr(&U8g2Handler, 0, 32, TITLE_STR2);
-	u8g2_SendBuffer(&U8g2Handler);
 }
 
 int main()
@@ -145,16 +139,22 @@ int main()
 	wait(1.0);
 #endif
 
+	SpiM1.frequency(SPI1_CLOCK);
+	
 	for (int i = 0; i < OSC_NUM; i++) {
 		phaccu[i] = 0;
-		tword_m[i] = pow(2.0, 32) * drate[i] / refclk;  // calculate DDS tuning word;
+		tword_m[i] = pow(2.0, 32) * drate[i] / REF_CLOCK;  // calculate DDS tuning word;
 	}
     
     // 1.0s / 1.0us = 1000000.0
-    float interruptPeriodUs = 1000000.0 / refclk; 
+    float interruptPeriodUs = 1000000.0 / REF_CLOCK; 
     ticker.attach_us(&update, interruptPeriodUs);
 
 	u8g2Initialize();
+	u8g2_SetFont(&U8g2Handler, u8g2_font_10x20_mf);
+	u8g2_DrawStr(&U8g2Handler, 0, 16, TITLE_STR1);
+	u8g2_DrawStr(&U8g2Handler, 0, 32, TITLE_STR2);
+	u8g2_SendBuffer(&U8g2Handler);
 	wait(2.0);
     
 	int count = 0;
@@ -166,6 +166,25 @@ int main()
 		CheckPin2.write(1);
 #endif
 
+		// MCP3008
+		uint16_t v0[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+		uint16_t v1[8] = { 8, 9, 10, 11, 12, 13, 14, 15 };
+        /*
+		for (int i = 0; i < 8; i++) {
+            v0[i] = Mcp3008_0.read_input_u16(i);
+            v1[i] = Mcp3008_1.read_input_u16(i);
+        }
+		*/
+		for (int i = 0; i < 8; i++) {
+            printf("%4d\t", v0[i]);
+        }
+        printf(": ");
+        for (int i = 0; i < 8; i++) {
+            printf("%4d\t", v1[i]);
+        }
+		printf("\r\n");
+		
+		
 		float elapse_time = t.read();
 		u8g2_ClearBuffer(&U8g2Handler);
 		u8g2_SetFont(&U8g2Handler, u8g2_font_10x20_mf);
@@ -174,8 +193,10 @@ int main()
 		sprintf(strBuffer, "%08d", count);
 		u8g2_DrawStr(&U8g2Handler, 0, 32, strBuffer);
 		u8g2_SendBuffer(&U8g2Handler);
-
+		
 		count++;
+		
+		wait_ms(10);
 
 #if (PIN_CHECK)
 		CheckPin2.write(0);

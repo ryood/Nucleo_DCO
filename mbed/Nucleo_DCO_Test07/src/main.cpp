@@ -1,9 +1,9 @@
 /*
-   Nucleo DCO Test05
+   Nucleo DCO Test07
 
-   3OSC Mix Test
+   u8g2-mbed + DDS(3OSC) + InternalADC
    
-   2018.08.31
+   2018.09.04
 
 */
 #include "mbed.h"
@@ -14,16 +14,30 @@
 #define COUNT_OF_ENTRIES  (32768)
 
 #define PIN_CHECK   (1)
-#define UART_TRACE  (1)
-#define TITLE_STR1  ("DCO Test05")
+#define UART_TRACE  (0)
+#define TITLE_STR1  ("DCO Test07")
 #define TITLE_STR2  (__DATE__)
 #define TITLE_STR3  (__TIME__)
 
-#define OSC_NUM  (3)
+#define OSC_NUM     (3)
+#define REF_CLOCK   (100000)  // 100kHz
 
 // Pin Assign
 AnalogOut Dac1(PA_4);
 AnalogOut Dac2(PA_5);
+
+AnalogIn Adc1(PA_3);
+AnalogIn Adc2(PC_0);
+AnalogIn Adc3(PC_3);
+AnalogIn Adc4(PF_3);
+AnalogIn Adc5(PF_5);
+AnalogIn Adc6(PF_10);
+AnalogIn Adc7(PA_7);
+AnalogIn Adc8(PF_8);
+AnalogIn Adc9(PF_7);
+AnalogIn Adc10(PF_9);
+AnalogIn Adc11(PB_1);
+AnalogIn Adc12(PC_2);
 
 #if (PIN_CHECK)
 DigitalOut CheckPin1(D4);
@@ -37,15 +51,36 @@ u8g2_t U8g2Handler;
 // Interruput
 Ticker ticker;
 
-// DDS
-const double refclk = 100000;  // 100kHz
+// UART
+#if (UART_TRACE)
+Serial pc(USBTX, USBRX);
+#endif
+
+// Parameter
+
+typedef enum {
+	WS_SINE,
+	WS_TRIANGLE,
+	WS_SAWUP,
+	WS_SAWDOWN,
+	WS_SQUARE,
+	WS_NOISE
+} waveShapeT;
+
 double drate[OSC_NUM]          // output rate (Hz)
-	= { 100.0, 101.0, 99.0 };
-float amplitude[OSC_NUM]       // output amplitude (0.0 ~ 1.0)
-	= { 0.3f, 0.3f, 0.3f };
+	= { 100.0, 100.0, 50.0 };
 float phase[OSC_NUM]           // output phase (0.0 ~ 1.0)
-	= { 0.0f, 0.1f, 0.2f };
-	
+	= { 0.0f, 0.0f, 0.0f };
+float pulseWidth[OSC_NUM]      // output pulseWidth (0.0 ~ 1.0)
+	= { 0.5f, 0.5f, 0.5f };
+float amplitude[OSC_NUM]       // output amplitude (0.0 ~ 1.0)
+	= { 0.0f, 0.0f, 0.3f };
+waveShapeT waveShape[OSC_NUM]
+	= { WS_SINE, WS_SINE, WS_SINE};
+int frequencyRange[OSC_NUM]
+	= { 1, 1, 1 };
+
+// DDS
 volatile uint32_t phaccu[OSC_NUM];
 volatile uint32_t tword_m[OSC_NUM];
 
@@ -118,36 +153,55 @@ void u8g2Initialize()
 	u8g2_InitDisplay(&U8g2Handler);
 	u8g2_SetPowerSave(&U8g2Handler, 0);
 	u8g2_ClearBuffer(&U8g2Handler);
+}
 
-	u8g2_SetFont(&U8g2Handler, u8g2_font_10x20_mf);
-	u8g2_DrawStr(&U8g2Handler, 0, 16, TITLE_STR1);
-	u8g2_DrawStr(&U8g2Handler, 0, 32, TITLE_STR2);
-	u8g2_SendBuffer(&U8g2Handler);
+void readParameters()
+{
+	// OSC1
+	drate[0]      = Adc1.read() * 200.0 + 10.0;
+	phase[0]      = Adc2.read();
+	pulseWidth[0] = Adc3.read();
+	amplitude[0]  = Adc4.read();
+
+	// OSC2
+	drate[1]      = Adc5.read() * 200.0 + 10.0;
+	phase[1]      = Adc6.read();
+	pulseWidth[1] = Adc7.read();
+	amplitude[1]  = Adc8.read();
+
+	// OSC3
+	drate[2]      = Adc9.read() * 200.0 + 10.0;
+	phase[2]      = Adc10.read();
+	pulseWidth[2] = Adc11.read();
+	amplitude[2]  = Adc12.read();
 }
 
 int main()
 {
 #if (UART_TRACE)
-	printf("\r\n%s\r\n", TITLE_STR1);
-	printf("%s %s\r\n", TITLE_STR2, TITLE_STR3);
-	printf("UINT32_MAX: %lu\r\n", UINT32_MAX);
-	printf("System Clock: %lu Hz\r\n", SystemCoreClock);
-	printf("CLOCKS_PER_SEC: %d\r\n", CLOCKS_PER_SEC);
-
-	wait(1.0);
+	pc.baud(115200);
+	pc.printf("\r\n%s\r\n", TITLE_STR1);
+	pc.printf("%s %s\r\n", TITLE_STR2, TITLE_STR3);
+	pc.printf("UINT32_MAX: %lu\r\n", UINT32_MAX);
+	pc.printf("System Clock: %lu Hz\r\n", SystemCoreClock);
+	pc.printf("CLOCKS_PER_SEC: %d\r\n", CLOCKS_PER_SEC);
 #endif
 
+	u8g2Initialize();
+	u8g2_SetFont(&U8g2Handler, u8g2_font_10x20_mf);
+	u8g2_DrawStr(&U8g2Handler, 0, 16, TITLE_STR1);
+	u8g2_DrawStr(&U8g2Handler, 0, 32, TITLE_STR2);
+	u8g2_SendBuffer(&U8g2Handler);
+	wait(2.0);
+	
 	for (int i = 0; i < OSC_NUM; i++) {
 		phaccu[i] = 0;
-		tword_m[i] = pow(2.0, 32) * drate[i] / refclk;  // calculate DDS tuning word;
+		tword_m[i] = pow(2.0, 32) * drate[i] / REF_CLOCK;  // calculate DDS tuning word;
 	}
     
     // 1.0s / 1.0us = 1000000.0
-    float interruptPeriodUs = 1000000.0 / refclk; 
+    float interruptPeriodUs = 1000000.0 / REF_CLOCK; 
     ticker.attach_us(&update, interruptPeriodUs);
-
-	u8g2Initialize();
-	wait(2.0);
     
 	int count = 0;
 	char strBuffer[20];
@@ -156,6 +210,18 @@ int main()
     while (1) {
 #if (PIN_CHECK)
 		CheckPin2.write(1);
+#endif
+
+		readParameters();
+		for (int i = 0; i < OSC_NUM; i++) {
+			tword_m[i] = pow(2.0, 32) * drate[i] / REF_CLOCK;  // calculate DDS tuning word;
+		}
+		
+#if (UART_TRACE)
+		for (int i = 0; i < OSC_NUM; i++) {
+			pc.printf("%lf\t%f\t%f\t%f:\t", drate[i], phase[i], pulseWidth[i], amplitude[i]);
+		}
+		pc.printf("\r\n");
 #endif
 
 		float elapse_time = t.read();
