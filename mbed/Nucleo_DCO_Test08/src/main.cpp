@@ -69,15 +69,15 @@ typedef enum {
 } waveShapeT;
 
 double drate[OSC_NUM]          // output rate (Hz)
-	= { 100.0, 100.0, 100.0 };
+	= { 1000.0, 1000.0, 1000.0 };
 float phase[OSC_NUM]           // output phase (0.0 ~ 1.0)
 	= { 0.0f, 0.0f, 0.0f };
 float pulseWidth[OSC_NUM]      // output pulseWidth (0.0 ~ 1.0)
 	= { 0.5f, 0.5f, 0.5f };
 float amplitude[OSC_NUM]       // output amplitude (0.0 ~ 1.0)
-	= { 0.0f, 0.0f, 1.0f };
+	= { 0.3f, 0.3f, 0.3f };
 waveShapeT waveShape[OSC_NUM]
-	= { WS_SIN, WS_SQR, WS_SAWUP };
+	= { WS_NOISE, WS_SQR, WS_SAWUP };
 int frequencyRange[OSC_NUM]
 	= { 1, 1, 1 };
 
@@ -140,7 +140,7 @@ void update()
 			v = tri_12bit_64k[idx];
 			break;
 		case WS_NOISE:
-			// ToDo: Impl. noise function
+			v = random() >> 20;
 			break;
 		}
 
