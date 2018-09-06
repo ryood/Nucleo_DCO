@@ -182,19 +182,19 @@ void readParameters()
 {
 	// OSC1
 	drate[0]      = Adc1.read() * 200.0 + 10.0;
-	phase[0]      = Adc2.read();
+	//phase[0]      = Adc2.read();
 	pulseWidth[0] = Adc3.read();
 	amplitude[0]  = (Adc4.read_u16() >> 12) / 15.0f;
 
 	// OSC2
 	drate[1]      = Adc5.read() * 200.0 + 10.0;
-	phase[1]      = Adc6.read();
+	//phase[1]      = Adc6.read();
 	pulseWidth[1] = Adc7.read();
 	amplitude[1]  = (Adc8.read_u16() >> 12) / 15.0f;
 
 	// OSC3
 	drate[2]      = Adc9.read() * 200.0 + 10.0;
-	phase[2]      = Adc10.read();
+	//phase[2]      = Adc10.read();
 	pulseWidth[2] = Adc11.read();
 	amplitude[2]  = (Adc12.read_u16() >> 12) / 15.0f;
 }
