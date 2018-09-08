@@ -4,7 +4,7 @@
    u8g2-mbed + DDS(3OSC) + InternalADC + InterruptIn
    64k wavetable
    
-   2018.09.06
+   2018.09.08
 
 */
 #include "mbed.h"
@@ -86,12 +86,12 @@ double drate[OSC_NUM]          // output rate (Hz)
 	= { 1000.0, 1000.0, 1000.0 };
 float phase[OSC_NUM]           // output phase (0.0 ~ 1.0)
 	= { 0.0f, 0.0f, 0.0f };
-float pulseWidth[OSC_NUM]      // output pulseWidth (0.0 ~ 1.0)
-	= { 0.5f, 0.5f, 0.5f };
+int pulseWidth[OSC_NUM]        // output pulseWidth (0 ~ COUNT_OF_ENTRIES)
+	= { COUNT_OF_ENTRIES/2, COUNT_OF_ENTRIES/2, COUNT_OF_ENTRIES/2 };
 float amplitude[OSC_NUM]       // output amplitude (0.0 ~ 1.0)
 	= { 0.3f, 0.3f, 0.3f };
 int waveShape[OSC_NUM]
-	= { WS_NOISE, WS_SQR, WS_SAWUP };
+	= { WS_SAWUP, WS_SAWUP, WS_SAWUP };
 int frequencyRange[OSC_NUM]
 	= { 1, 1, 1 };
 
@@ -164,7 +164,11 @@ void update()
 			v = tri_12bit_64k[idx];
 			break;
 		case WS_SQR:
-			v = sqr_12bit_64k[idx];
+			if (idx < pulseWidth[i]) {
+				v = 4095;
+			} else {
+				v = 0;
+			}
 			break;
 		case WS_SAWUP:
 			v = sawup_12bit_64k[idx];
@@ -173,7 +177,7 @@ void update()
 			v = sawdown_12bit_64k[idx];
 			break;
 		case WS_NOISE:
-			v = rand() % 4095 ;
+			v = rand() % 4095;
 			break;
 		}
 
@@ -250,19 +254,19 @@ void readAdcParameters()
 	// OSC1
 	drate[0]      = Adc1.read() * 200.0 + 10.0;
 	//phase[0]      = Adc2.read();
-	pulseWidth[0] = Adc3.read();
+	pulseWidth[0] = Adc3.read() * COUNT_OF_ENTRIES;
 	amplitude[0]  = (Adc4.read_u16() >> 12) / 15.0f;
 
 	// OSC2
 	drate[1]      = Adc5.read() * 200.0 + 10.0;
 	//phase[1]      = Adc6.read();
-	pulseWidth[1] = Adc7.read();
+	pulseWidth[1] = Adc7.read() * COUNT_OF_ENTRIES;
 	amplitude[1]  = (Adc8.read_u16() >> 12) / 15.0f;
 
 	// OSC3
 	drate[2]      = Adc9.read() * 200.0 + 10.0;
 	//phase[2]      = Adc10.read();
-	pulseWidth[2] = Adc11.read();
+	pulseWidth[2] = Adc11.read() * COUNT_OF_ENTRIES;
 	amplitude[2]  = (Adc12.read_u16() >> 12) / 15.0f;
 }
 
@@ -363,7 +367,7 @@ int main()
 		
 #if (UART_TRACE)
 		for (int i = 0; i < OSC_NUM; i++) {
-			pc.printf("%d\t%d\t%lf\t%f\t%f\t%f:\t", 
+			pc.printf("%d  %d  %lf\t%f\t%d\t%f:\t", 
 				waveShape[i],
 				frequencyRange[i],
 				drate[i], 
