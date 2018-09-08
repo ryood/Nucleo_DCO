@@ -12,7 +12,6 @@
 #define TITLE_STR2  (__DATE__)
 #define TITLE_STR3  (__TIME__)
 
-//#define DEBOUNCE_DELAY  (0.01f)  // sec
 #define DEBOUNCE_DELAY  (10000)  // usec
 
 DigitalOut led(LED1);

@@ -23,7 +23,7 @@
 #define OSC_NUM     (3)
 #define REF_CLOCK   (100000)  // 100kHz
 
-#define DEBOUNCE_DELAY  (0.01f)  // sec
+#define DEBOUNCE_DELAY  (10000)  // usec
 
 // Pin Assign
 AnalogOut Dac1(PA_4);
@@ -71,15 +71,15 @@ Serial pc(USBTX, USBRX);
 #endif
 
 // Parameter
-
-typedef enum {
+enum {
 	WS_SIN,
 	WS_TRI,
 	WS_SAWUP,
 	WS_SAWDOWN,
 	WS_SQR,
-	WS_NOISE
-} waveShapeT;
+	WS_NOISE,
+	WS_MAX
+};
 
 double drate[OSC_NUM]          // output rate (Hz)
 	= { 1000.0, 1000.0, 1000.0 };
@@ -89,7 +89,7 @@ float pulseWidth[OSC_NUM]      // output pulseWidth (0.0 ~ 1.0)
 	= { 0.5f, 0.5f, 0.5f };
 float amplitude[OSC_NUM]       // output amplitude (0.0 ~ 1.0)
 	= { 0.3f, 0.3f, 0.3f };
-waveShapeT waveShape[OSC_NUM]
+int waveShape[OSC_NUM]
 	= { WS_NOISE, WS_SQR, WS_SAWUP };
 int frequencyRange[OSC_NUM]
 	= { 1, 1, 1 };
@@ -172,7 +172,7 @@ void update()
 			v = tri_12bit_64k[idx];
 			break;
 		case WS_NOISE:
-			v = random() >> 20;
+			v = rand() % 4095 ;
 			break;
 		}
 
@@ -210,14 +210,14 @@ void debounce5() { if (Button5.read() == 0) { isButtonPushed5 = true; } debounce
 void debounce6() { if (Button6.read() == 0) { isButtonPushed6 = true; } debouncer6.detach(); }
 void debounce7() { if (Button7.read() == 0) { isButtonPushed7 = true; } debouncer7.detach(); }
 
-void interruptHandler0() { debouncer0.attach(&debounce0, DEBOUNCE_DELAY); }
-void interruptHandler1() { debouncer1.attach(&debounce1, DEBOUNCE_DELAY); }
-void interruptHandler2() { debouncer2.attach(&debounce2, DEBOUNCE_DELAY); }
-void interruptHandler3() { debouncer3.attach(&debounce3, DEBOUNCE_DELAY); }
-void interruptHandler4() { debouncer4.attach(&debounce4, DEBOUNCE_DELAY); }
-void interruptHandler5() { debouncer5.attach(&debounce5, DEBOUNCE_DELAY); }
-void interruptHandler6() { debouncer6.attach(&debounce6, DEBOUNCE_DELAY); }
-void interruptHandler7() { debouncer7.attach(&debounce7, DEBOUNCE_DELAY); }
+void interruptHandler0() { debouncer0.attach_us(&debounce0, DEBOUNCE_DELAY); }
+void interruptHandler1() { debouncer1.attach_us(&debounce1, DEBOUNCE_DELAY); }
+void interruptHandler2() { debouncer2.attach_us(&debounce2, DEBOUNCE_DELAY); }
+void interruptHandler3() { debouncer3.attach_us(&debounce3, DEBOUNCE_DELAY); }
+void interruptHandler4() { debouncer4.attach_us(&debounce4, DEBOUNCE_DELAY); }
+void interruptHandler5() { debouncer5.attach_us(&debounce5, DEBOUNCE_DELAY); }
+void interruptHandler6() { debouncer6.attach_us(&debounce6, DEBOUNCE_DELAY); }
+void interruptHandler7() { debouncer7.attach_us(&debounce7, DEBOUNCE_DELAY); }
 
 //-------------------------------------------------------------------------------------------------
 // Main routine
@@ -232,7 +232,19 @@ void u8g2Initialize()
 	u8g2_ClearBuffer(&U8g2Handler);
 }
 
-void readParameters()
+void debouncerInitialize()
+{
+	Button0.fall(&interruptHandler0);
+	Button1.fall(&interruptHandler1);
+	Button2.fall(&interruptHandler2);
+	Button3.fall(&interruptHandler3);
+	Button4.fall(&interruptHandler4);
+	Button5.fall(&interruptHandler5);
+	Button6.fall(&interruptHandler6);
+	Button7.fall(&interruptHandler7);
+}
+
+void readAdcParameters()
 {
 	// OSC1
 	drate[0]      = Adc1.read() * 200.0 + 10.0;
@@ -253,16 +265,40 @@ void readParameters()
 	amplitude[2]  = (Adc12.read_u16() >> 12) / 15.0f;
 }
 
-void debouncerInitialize()
+void readButtonParameters()
 {
-	Button0.fall(&interruptHandler0);
-	Button1.fall(&interruptHandler1);
-	Button2.fall(&interruptHandler2);
-	Button3.fall(&interruptHandler3);
-	Button4.fall(&interruptHandler4);
-	Button5.fall(&interruptHandler5);
-	Button6.fall(&interruptHandler6);
-	Button7.fall(&interruptHandler7);
+	/*
+	if (isButtonPushed0) { printf("Button0 pushed\r\n"); isButtonPushed0 = false; }
+	if (isButtonPushed1) { printf("Button1 pushed\r\n"); isButtonPushed1 = false; }
+	if (isButtonPushed2) { printf("Button2 pushed\r\n"); isButtonPushed2 = false; }
+	if (isButtonPushed3) { printf("Button3 pushed\r\n"); isButtonPushed3 = false; }
+	if (isButtonPushed4) { printf("Button4 pushed\r\n"); isButtonPushed4 = false; }
+	if (isButtonPushed5) { printf("Button5 pushed\r\n"); isButtonPushed5 = false; }
+	if (isButtonPushed6) { printf("Button6 pushed\r\n"); isButtonPushed6 = false; }
+	if (isButtonPushed7) { printf("Button7 pushed\r\n"); isButtonPushed7 = false; }
+	*/
+	
+	if (isButtonPushed0) {
+		waveShape[0]++;
+		if (waveShape[0] >= WS_MAX) {
+			waveShape[0] = 0;
+		}
+		isButtonPushed0 = false;
+	}
+	if (isButtonPushed1) {
+		waveShape[1]++;
+		if (waveShape[1] >= WS_MAX) {
+			waveShape[1] = 0;
+		}
+		isButtonPushed1 = false;
+	}
+	if (isButtonPushed2) {
+		waveShape[2]++;
+		if (waveShape[2] >= WS_MAX) {
+			waveShape[2] = 0;
+		}
+		isButtonPushed2 = false;
+	}
 }
 
 int main()
@@ -276,14 +312,14 @@ int main()
 	pc.printf("CLOCKS_PER_SEC: %d\r\n", CLOCKS_PER_SEC);
 #endif
 
-	debouncerInitialize();
-
 	u8g2Initialize();
 	u8g2_SetFont(&U8g2Handler, u8g2_font_10x20_mf);
 	u8g2_DrawStr(&U8g2Handler, 0, 16, TITLE_STR1);
 	u8g2_DrawStr(&U8g2Handler, 0, 32, TITLE_STR2);
 	u8g2_SendBuffer(&U8g2Handler);
 	wait(2.0);
+
+	debouncerInitialize();
 	
 	for (int i = 0; i < OSC_NUM; i++) {
 		phaccu[i] = 0;
@@ -303,27 +339,19 @@ int main()
 		CheckPin2.write(1);
 #endif
 
-		readParameters();
+		readAdcParameters();
 		for (int i = 0; i < OSC_NUM; i++) {
 			tword_m[i] = pow(2.0, 32) * drate[i] / REF_CLOCK;  // calculate DDS tuning word;
 		}
 		
+		readButtonParameters();
+		
 #if (UART_TRACE)
 		for (int i = 0; i < OSC_NUM; i++) {
-			pc.printf("%lf\t%f\t%f\t%f:\t", drate[i], phase[i], pulseWidth[i], amplitude[i]);
+			pc.printf("%d\t%lf\t%f\t%f\t%f:\t", waveShape[i], drate[i], phase[i], pulseWidth[i], amplitude[i]);
 		}
 		pc.printf("\r\n");
-		
 #endif
-
-		if (isButtonPushed0) { printf("Button0 pushed\r\n"); isButtonPushed0 = false; }
-		if (isButtonPushed1) { printf("Button1 pushed\r\n"); isButtonPushed1 = false; }
-		if (isButtonPushed2) { printf("Button2 pushed\r\n"); isButtonPushed2 = false; }
-		if (isButtonPushed3) { printf("Button3 pushed\r\n"); isButtonPushed3 = false; }
-		if (isButtonPushed4) { printf("Button4 pushed\r\n"); isButtonPushed4 = false; }
-		if (isButtonPushed5) { printf("Button5 pushed\r\n"); isButtonPushed5 = false; }
-		if (isButtonPushed6) { printf("Button6 pushed\r\n"); isButtonPushed6 = false; }
-		if (isButtonPushed7) { printf("Button7 pushed\r\n"); isButtonPushed7 = false; }
 
 		float elapse_time = t.read();
 		u8g2_ClearBuffer(&U8g2Handler);
