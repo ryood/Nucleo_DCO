@@ -9,6 +9,8 @@ Nucleo_DCO_Test07 u8g2-mbed + DDS(3OSC) + 内蔵ADCの結合テスト
 Nucleo_DCO_Test08 各種波形出力
 
 InterruptIn_Test01 InterruptIn（チャタリング対策）のテスト
+InterruptIn_Test02 複数のInterruptIn（チャタリング対策）のテスト: F446RE
+InterruptIn_Test03 複数のInterruptIn（チャタリング対策）のテスト: F767ZI
 InternalADC_Test01 内蔵ADCの読み取り時間を計測
 MCP3008_Test01     MCP3008の読み取り時間を計測
 random_Test01      random()関数の処理時間を計測
