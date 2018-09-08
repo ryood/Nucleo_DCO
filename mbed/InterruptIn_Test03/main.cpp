@@ -12,7 +12,8 @@
 #define TITLE_STR2  (__DATE__)
 #define TITLE_STR3  (__TIME__)
 
-#define DEBOUNCE_DELAY  (0.01f)  // sec
+//#define DEBOUNCE_DELAY  (0.01f)  // sec
+#define DEBOUNCE_DELAY  (10000)  // usec
 
 DigitalOut led(LED1);
 
@@ -66,16 +67,16 @@ void debounce7() { if (Button7.read() == 0) { isButtonPushed7 = true; } debounce
 
 void interruptHandler0() {
 	CheckPin1.write(1);
-	debouncer0.attach(&debounce0, DEBOUNCE_DELAY);
+	debouncer0.attach_us(&debounce0, DEBOUNCE_DELAY);
 	CheckPin1.write(0);
 }
-void interruptHandler1() { debouncer1.attach(&debounce1, DEBOUNCE_DELAY); }
-void interruptHandler2() { debouncer2.attach(&debounce2, DEBOUNCE_DELAY); }
-void interruptHandler3() { debouncer3.attach(&debounce3, DEBOUNCE_DELAY); }
-void interruptHandler4() { debouncer4.attach(&debounce4, DEBOUNCE_DELAY); }
-void interruptHandler5() { debouncer5.attach(&debounce5, DEBOUNCE_DELAY); }
-void interruptHandler6() { debouncer6.attach(&debounce6, DEBOUNCE_DELAY); }
-void interruptHandler7() { debouncer7.attach(&debounce7, DEBOUNCE_DELAY); }
+void interruptHandler1() { debouncer1.attach_us(&debounce1, DEBOUNCE_DELAY); }
+void interruptHandler2() { debouncer2.attach_us(&debounce2, DEBOUNCE_DELAY); }
+void interruptHandler3() { debouncer3.attach_us(&debounce3, DEBOUNCE_DELAY); }
+void interruptHandler4() { debouncer4.attach_us(&debounce4, DEBOUNCE_DELAY); }
+void interruptHandler5() { debouncer5.attach_us(&debounce5, DEBOUNCE_DELAY); }
+void interruptHandler6() { debouncer6.attach_us(&debounce6, DEBOUNCE_DELAY); }
+void interruptHandler7() { debouncer7.attach_us(&debounce7, DEBOUNCE_DELAY); }
 
 int main()
 {
