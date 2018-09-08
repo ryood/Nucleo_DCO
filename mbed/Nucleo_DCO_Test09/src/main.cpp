@@ -171,10 +171,10 @@ void update()
 			}
 			break;
 		case WS_SAWUP:
-			v = sawup_12bit_64k[idx];
+			v = idx >> 4;
 			break;
 		case WS_SAWDOWN:
-			v = sawdown_12bit_64k[idx];
+			v = 4095 - (idx >> 4);
 			break;
 		case WS_NOISE:
 			v = rand() % 4095;
