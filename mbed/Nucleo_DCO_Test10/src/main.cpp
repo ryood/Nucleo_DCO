@@ -1,7 +1,7 @@
 /*
-   Nucleo DCO Test09
+   Nucleo DCO Test10
 
-   u8g2-mbed + DDS(3OSC) + InternalADC + InterruptIn
+   u8g2-mbed + DDS(3OSC) + InternalADC + InterruptIn + DisplayMode
    64k wavetable
    
    2018.09.08
@@ -16,7 +16,7 @@
 
 #define PIN_CHECK   (1)
 #define UART_TRACE  (1)
-#define TITLE_STR1  ("DCO Test09")
+#define TITLE_STR1  ("DCO Test10")
 #define TITLE_STR2  (__DATE__)
 #define TITLE_STR3  (__TIME__)
 
@@ -24,7 +24,7 @@
 #define FREQUENCY_RANGE_MAX  (6)
 #define REF_CLOCK            (100000)  // 100kHz
 
-#define DEBOUNCE_DELAY  (10000)  // usec
+#define DEBOUNCE_DELAY       (10000)  // usec
 
 // Pin Assign
 AnalogOut Dac1(PA_4);
@@ -63,8 +63,17 @@ DigitalOut CheckPin2(D5);
 uint8_t u8x8_gpio_and_delay_mbed(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 u8g2_t U8g2Handler;
 
-// Interruput
-Ticker ticker;
+// display mode
+enum {
+	DM_FPS,
+	DM_WAVESHAPE_RANGE,
+	DM_MAX
+};
+
+int displayMode = DM_WAVESHAPE_RANGE;
+
+// DDS Interruput
+Ticker ddsTicker;
 
 // UART
 #if (UART_TRACE)
@@ -82,6 +91,25 @@ enum {
 	WS_MAX
 };
 
+const char* waveShapeName[] = {
+	"SIN",
+	"TRI",
+	"SUP",
+	"SDN",
+	"SQR",
+	"NOS",
+	"XXX"
+};
+
+const char* frequencyRangeName[] = {
+	"64'",
+	"32'",
+	"16'",
+	" 8'",
+	" 4'",
+	" 2'"
+};
+
 double drate[OSC_NUM]          // output rate (Hz)
 	= { 1000.0, 1000.0, 1000.0 };
 float phase[OSC_NUM]           // output phase (0.0 ~ 1.0)
@@ -91,9 +119,9 @@ int pulseWidth[OSC_NUM]        // output pulseWidth (0 ~ COUNT_OF_ENTRIES)
 float amplitude[OSC_NUM]       // output amplitude (0.0 ~ 1.0)
 	= { 0.3f, 0.3f, 0.3f };
 int waveShape[OSC_NUM]
-	= { WS_SAWUP, WS_SAWUP, WS_SAWUP };
+	= { WS_SIN, WS_SIN, WS_SIN };
 int frequencyRange[OSC_NUM]
-	= { 1, 1, 1 };
+	= { 1, 2, 3 };
 
 // DDS
 volatile uint32_t phaccu[OSC_NUM];
@@ -119,7 +147,7 @@ volatile bool isButtonPushed6 = false;
 volatile bool isButtonPushed7 = false;
 
 //-------------------------------------------------------------------------------------------------
-// Interrupt Service Routine
+// DDS Interrupt Service Routine
 //
 
 // param
@@ -225,12 +253,11 @@ void interruptHandler6() { debouncer6.attach_us(&debounce6, DEBOUNCE_DELAY); }
 void interruptHandler7() { debouncer7.attach_us(&debounce7, DEBOUNCE_DELAY); }
 
 //-------------------------------------------------------------------------------------------------
-// Main routine
+// Initialize
 //
 
 void u8g2Initialize()
 {
-	//u8g2_Setup_ssd1306_i2c_128x64_noname_f(&myScreen, U8G2_R0, u8x8_byte_sw_i2c, u8x8_gpio_and_delay_mbed);
 	u8g2_Setup_ssd1306_i2c_128x32_univision_f(&U8g2Handler, U8G2_R0, u8x8_byte_sw_i2c, u8x8_gpio_and_delay_mbed);
 	u8g2_InitDisplay(&U8g2Handler);
 	u8g2_SetPowerSave(&U8g2Handler, 0);
@@ -249,22 +276,26 @@ void debouncerInitialize()
 	Button7.fall(&interruptHandler7);
 }
 
+//-------------------------------------------------------------------------------------------------
+// Input process
+//
+
 void readAdcParameters()
 {
 	// OSC1
-	drate[0]      = Adc1.read() * 200.0 + 10.0;
+	drate[0]      = Adc1.read() * 55.0 + 55.0;
 	phase[0]      = Adc2.read();
 	pulseWidth[0] = Adc3.read() * COUNT_OF_ENTRIES;
 	amplitude[0]  = (Adc4.read_u16() >> 12) / 15.0f;
 
 	// OSC2
-	drate[1]      = Adc5.read() * 200.0 + 10.0;
+	drate[1]      = Adc5.read() * 110.0 + 110.0;
 	phase[1]      = Adc6.read();
 	pulseWidth[1] = Adc7.read() * COUNT_OF_ENTRIES;
 	amplitude[1]  = (Adc8.read_u16() >> 12) / 15.0f;
 
 	// OSC3
-	drate[2]      = Adc9.read() * 200.0 + 10.0;
+	drate[2]      = Adc9.read() * 220.0 + 220.0;
 	phase[2]      = Adc10.read();
 	pulseWidth[2] = Adc11.read() * COUNT_OF_ENTRIES;
 	amplitude[2]  = (Adc12.read_u16() >> 12) / 15.0f;
@@ -317,8 +348,64 @@ void readButtonParameters()
 		}
 		isButtonPushed5 = false;
 	}
+	
+	// Display Mode
+	if (isButtonPushed6) {
+		displayMode++;
+		if (displayMode >= DM_MAX) {
+			displayMode = 0;
+		}
+		isButtonPushed6 = false;
+	}
 }
 
+//-------------------------------------------------------------------------------------------------
+// Display
+//
+
+void displayFps(float elapse, int count)
+{
+	char strBuffer[20];
+	
+	u8g2_ClearBuffer(&U8g2Handler);
+	u8g2_SetFont(&U8g2Handler, u8g2_font_10x20_mf);
+
+	sprintf(strBuffer, "%.1f %.1fs", count/elapse, elapse);
+	u8g2_DrawStr(&U8g2Handler, 0, 16, strBuffer);
+
+	sprintf(strBuffer, "%08d", count);
+	u8g2_DrawStr(&U8g2Handler, 0, 32, strBuffer);
+
+	u8g2_SendBuffer(&U8g2Handler);
+}
+
+void displayWaveShapeRange()
+{
+	char strBuffer[20];
+	
+	u8g2_ClearBuffer(&U8g2Handler);
+	u8g2_SetFont(&U8g2Handler, u8g2_font_10x20_mf);
+
+	sprintf(strBuffer, "%s %s %s", 
+		waveShapeName[waveShape[0]],
+		waveShapeName[waveShape[1]],
+		waveShapeName[waveShape[2]]
+	);
+	u8g2_DrawStr(&U8g2Handler, 4, 16, strBuffer);
+
+	sprintf(strBuffer, "%s %s %s", 
+		frequencyRangeName[frequencyRange[0]],
+		frequencyRangeName[frequencyRange[1]],
+		frequencyRangeName[frequencyRange[2]]
+	);
+	u8g2_DrawStr(&U8g2Handler, 4, 32, strBuffer);
+
+	u8g2_SendBuffer(&U8g2Handler);
+}
+
+//-------------------------------------------------------------------------------------------------
+// Main function
+//
 int main()
 {
 #if (UART_TRACE)
@@ -347,10 +434,9 @@ int main()
     
     // 1.0s / 1.0us = 1000000.0
     float interruptPeriodUs = 1000000.0 / REF_CLOCK; 
-    ticker.attach_us(&update, interruptPeriodUs);
+    ddsTicker.attach_us(&update, interruptPeriodUs);
     
 	int count = 0;
-	char strBuffer[20];
 	Timer t;
 	t.start();
     while (1) {
@@ -376,17 +462,22 @@ int main()
 				amplitude[i]
 			);
 		}
-		pc.printf("\r\n");
+		pc.printf("%d\r\n", displayMode);
 #endif
-
-		float elapse_time = t.read();
-		u8g2_ClearBuffer(&U8g2Handler);
-		u8g2_SetFont(&U8g2Handler, u8g2_font_10x20_mf);
-		sprintf(strBuffer, "%.1f %.1fs", count/elapse_time, elapse_time);
-		u8g2_DrawStr(&U8g2Handler, 0, 16, strBuffer);
-		sprintf(strBuffer, "%08d", count);
-		u8g2_DrawStr(&U8g2Handler, 0, 32, strBuffer);
-		u8g2_SendBuffer(&U8g2Handler);
+		
+		float elapseTime = t.read();
+		if (elapseTime > 1.0f) {
+			t.reset();
+			count = 0;
+		}
+		switch (displayMode) {
+		case DM_WAVESHAPE_RANGE:
+			displayWaveShapeRange();
+			break;
+		case DM_FPS:
+			displayFps(elapseTime, count);
+			break;
+		}
 
 		count++;
 
