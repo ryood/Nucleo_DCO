@@ -20,8 +20,9 @@
 #define TITLE_STR2  (__DATE__)
 #define TITLE_STR3  (__TIME__)
 
-#define OSC_NUM     (3)
-#define REF_CLOCK   (100000)  // 100kHz
+#define OSC_NUM              (3)
+#define FREQUENCY_RANGE_MAX  (6)
+#define REF_CLOCK            (100000)  // 100kHz
 
 #define DEBOUNCE_DELAY  (10000)  // usec
 
@@ -169,7 +170,7 @@ void update()
 			v = sawup_12bit_64k[idx];
 			break;
 		case WS_SAWDOWN:
-			v = tri_12bit_64k[idx];
+			v = sawdown_12bit_64k[idx];
 			break;
 		case WS_NOISE:
 			v = rand() % 4095 ;
@@ -267,17 +268,7 @@ void readAdcParameters()
 
 void readButtonParameters()
 {
-	/*
-	if (isButtonPushed0) { printf("Button0 pushed\r\n"); isButtonPushed0 = false; }
-	if (isButtonPushed1) { printf("Button1 pushed\r\n"); isButtonPushed1 = false; }
-	if (isButtonPushed2) { printf("Button2 pushed\r\n"); isButtonPushed2 = false; }
-	if (isButtonPushed3) { printf("Button3 pushed\r\n"); isButtonPushed3 = false; }
-	if (isButtonPushed4) { printf("Button4 pushed\r\n"); isButtonPushed4 = false; }
-	if (isButtonPushed5) { printf("Button5 pushed\r\n"); isButtonPushed5 = false; }
-	if (isButtonPushed6) { printf("Button6 pushed\r\n"); isButtonPushed6 = false; }
-	if (isButtonPushed7) { printf("Button7 pushed\r\n"); isButtonPushed7 = false; }
-	*/
-	
+	// Wave shape
 	if (isButtonPushed0) {
 		waveShape[0]++;
 		if (waveShape[0] >= WS_MAX) {
@@ -299,6 +290,29 @@ void readButtonParameters()
 		}
 		isButtonPushed2 = false;
 	}
+	
+	// Frequency range
+	if (isButtonPushed3) {
+		frequencyRange[0]++;
+		if (frequencyRange[0] >= FREQUENCY_RANGE_MAX) {
+			frequencyRange[0] = 0;
+		}
+		isButtonPushed3 = false;
+	}
+	if (isButtonPushed4) {
+		frequencyRange[1]++;
+		if (frequencyRange[1] >= FREQUENCY_RANGE_MAX) {
+			frequencyRange[1] = 0;
+		}
+		isButtonPushed4 = false;
+	}
+	if (isButtonPushed5) {
+		frequencyRange[2]++;
+		if (frequencyRange[2] >= FREQUENCY_RANGE_MAX) {
+			frequencyRange[2] = 0;
+		}
+		isButtonPushed5 = false;
+	}
 }
 
 int main()
@@ -310,6 +324,7 @@ int main()
 	pc.printf("UINT32_MAX: %lu\r\n", UINT32_MAX);
 	pc.printf("System Clock: %lu Hz\r\n", SystemCoreClock);
 	pc.printf("CLOCKS_PER_SEC: %d\r\n", CLOCKS_PER_SEC);
+	pc.printf("RAND_MAX: %d\r\n", RAND_MAX);
 #endif
 
 	u8g2Initialize();
@@ -348,7 +363,14 @@ int main()
 		
 #if (UART_TRACE)
 		for (int i = 0; i < OSC_NUM; i++) {
-			pc.printf("%d\t%lf\t%f\t%f\t%f:\t", waveShape[i], drate[i], phase[i], pulseWidth[i], amplitude[i]);
+			pc.printf("%d\t%d\t%lf\t%f\t%f\t%f:\t", 
+				waveShape[i],
+				frequencyRange[i],
+				drate[i], 
+				phase[i],
+				pulseWidth[i],
+				amplitude[i]
+			);
 		}
 		pc.printf("\r\n");
 #endif
