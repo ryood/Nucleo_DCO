@@ -1,6 +1,6 @@
 /*
- * InterruptIn Test 02
- * Multi InterruptIn (F446RE)
+ * InterruptIn Test 03
+ * Multi InterruptIn (F767RE)
  *
  * 2018.09.08
  *
@@ -8,7 +8,7 @@
 
 #include "mbed.h"
 
-#define TITLE_STR1  ("InterruptIn Test02")
+#define TITLE_STR1  ("InterruptIn Test03")
 #define TITLE_STR2  (__DATE__)
 #define TITLE_STR3  (__TIME__)
 
@@ -16,19 +16,19 @@
 
 DigitalOut led(LED1);
 
-DigitalOut CheckPin1(PA_7);
-DigitalOut CheckPin2(PA_6);
+DigitalOut CheckPin1(PF_14);  // D4
+DigitalOut CheckPin2(PE_11);  // D5
 
 // Interrupt: cannot use same pin number
-//  not use PB_10 (D6)
-InterruptIn Button0(PA_10, PullUp);
-InterruptIn Button1(PB_3, PullUp);
-InterruptIn Button2(PB_5, PullUp);
-InterruptIn Button3(PB_4, PullUp);
-InterruptIn Button4(PA_8, PullUp);
-InterruptIn Button5(PA_9, PullUp);
-InterruptIn Button6(PC_7, PullUp);
-InterruptIn Button7(PB_6, PullUp);
+//  not use PE_10
+InterruptIn Button0(PB_11, PullUp);
+InterruptIn Button1(PB_10, PullUp);
+InterruptIn Button2(PE_15, PullUp);
+InterruptIn Button3(PE_14, PullUp);
+InterruptIn Button4(PE_12, PullUp);
+InterruptIn Button5(PE_7,  PullUp);
+InterruptIn Button6(PE_8,  PullUp);
+InterruptIn Button7(PE_0,  PullUp);
 
 Ticker debouncer0;
 Ticker debouncer1;
