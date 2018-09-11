@@ -16,3 +16,5 @@ InterruptIn_Test03 複数のInterruptIn（チャタリング対策）のテス�
 InternalADC_Test01 内蔵ADCの読み取り時間を計測
 MCP3008_Test01     MCP3008の読み取り時間を計測
 random_Test01      random()関数の処理時間を計測
+Pot_Panel_Test01   POT_Panelの読み取りテスト：F446RE
+Pot_Panel_Test02   POT_Panelの読み取りテスト：F767ZI
