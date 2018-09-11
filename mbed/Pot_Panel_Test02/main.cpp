@@ -1,3 +1,12 @@
+/*
+   Pot_Panel_Test02
+
+   Nucleo DCO POT Panel Test
+   
+   
+   2018.09.11
+
+*/
 #include "mbed.h"
 
 #define AIN_NUM  (10)
@@ -11,7 +20,7 @@ AnalogIn Ain[AIN_NUM] = {
 	AnalogIn(PF_3),
 	AnalogIn(PF_5),
 	AnalogIn(PF_10),
-	AnalogIn(PA_7),
+	AnalogIn(PA_0),
 	AnalogIn(PF_8),
 	AnalogIn(PF_7),
 	AnalogIn(PF_9)
