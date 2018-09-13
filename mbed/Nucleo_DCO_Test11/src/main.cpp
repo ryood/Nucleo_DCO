@@ -115,6 +115,8 @@ const double frequencyBase[FREQUENCY_RANGE_MAX] = {
 };
 
 double masterFrequency = 1000.0;
+float masterAmplitude = 1.0f;
+
 double detune[OSC_NUM]
 	= { 0.0, 0.0, 0.0 };
 double drate[OSC_NUM]          // output rate (Hz)
@@ -220,7 +222,8 @@ void update()
 		sum += v * amplitude[i];
 	}
 	
-	// sum = sum / OSC_NUM;
+	// Attenuate
+	sum = sum * masterAmplitude * 2.0f;
 	
 	// limiter
 	if (sum < 0) {
@@ -329,6 +332,9 @@ void readAdcParameters()
 	drate[2]      = detuning(f3, detune[2]);
 	pulseWidth[2] = Adc8.read() * COUNT_OF_ENTRIES;
 	amplitude[2]  = (Adc9.read_u16() >> 12) / 15.0f;
+	
+	// Master amplitude
+	masterAmplitude = Adc10.read();
 }
 
 void readButtonParameters()
@@ -492,7 +498,7 @@ int main()
 				amplitude[i]
 			);
 		}
-		pc.printf("%d\r\n", displayMode);
+		pc.printf("%1.3f\t%d\r\n", masterAmplitude, displayMode);
 #endif
 		
 		float elapseTime = t.read();
