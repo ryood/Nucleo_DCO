@@ -135,14 +135,14 @@ volatile uint32_t phaccu[OSC_NUM];
 volatile uint32_t tword_m[OSC_NUM];
 
 // Debounce
-Ticker debouncer0;
-Ticker debouncer1;
-Ticker debouncer2;
-Ticker debouncer3;
-Ticker debouncer4;
-Ticker debouncer5;
-Ticker debouncer6;
-Ticker debouncer7;
+Timeout debouncer0;
+Timeout debouncer1;
+Timeout debouncer2;
+Timeout debouncer3;
+Timeout debouncer4;
+Timeout debouncer5;
+Timeout debouncer6;
+Timeout debouncer7;
 
 volatile bool isButtonPushed0 = false;
 volatile bool isButtonPushed1 = false;
@@ -241,14 +241,14 @@ void update()
 // Debounce
 //
 
-void debounce0() { if (Button0.read() == 0) { isButtonPushed0 = true; } debouncer0.detach(); }
-void debounce1() { if (Button1.read() == 0) { isButtonPushed1 = true; } debouncer1.detach(); }
-void debounce2() { if (Button2.read() == 0) { isButtonPushed2 = true; } debouncer2.detach(); }
-void debounce3() { if (Button3.read() == 0) { isButtonPushed3 = true; } debouncer3.detach(); }
-void debounce4() { if (Button4.read() == 0) { isButtonPushed4 = true; } debouncer4.detach(); }
-void debounce5() { if (Button5.read() == 0) { isButtonPushed5 = true; } debouncer5.detach(); }
-void debounce6() { if (Button6.read() == 0) { isButtonPushed6 = true; } debouncer6.detach(); }
-void debounce7() { if (Button7.read() == 0) { isButtonPushed7 = true; } debouncer7.detach(); }
+void debounce0() { if (Button0.read() == 0) isButtonPushed0 = true; }
+void debounce1() { if (Button1.read() == 0) isButtonPushed1 = true; }
+void debounce2() { if (Button2.read() == 0) isButtonPushed2 = true; }
+void debounce3() { if (Button3.read() == 0) isButtonPushed3 = true; }
+void debounce4() { if (Button4.read() == 0) isButtonPushed4 = true; }
+void debounce5() { if (Button5.read() == 0) isButtonPushed5 = true; }
+void debounce6() { if (Button6.read() == 0) isButtonPushed6 = true; }
+void debounce7() { if (Button7.read() == 0) isButtonPushed7 = true; }
 
 void interruptHandler0() { debouncer0.attach_us(&debounce0, DEBOUNCE_DELAY); }
 void interruptHandler1() { debouncer1.attach_us(&debounce1, DEBOUNCE_DELAY); }
