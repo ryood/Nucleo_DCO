@@ -287,15 +287,31 @@ void debouncerInitialize()
 // Input process
 //
 
-inline double detuning(double f, double base, double detune)
+// Detuinig frequency
+//
+// param
+//  frequency:  base frequency (0.0 ~)
+//  detune:    detune ratio (-1.0 ~ 1.0)
+inline double detuning(double frequency, double detune)
 {
-	return (f * base + base) * detune;
+	// pseudo exp. curve
+	
+	if (detune > 0.0) {
+		detune = detune + 1.0;
+	} else {
+		detune = detune * 0.5 + 1.0;
+	}
+	return frequency * detune;
 }
 
 void readAdcParameters()
 {
-	float f = Adc1.read();
+	float f  = Adc1.read();
+
+	// Frequency Range
 	masterFrequency = f * frequencyBase[frequencyRange[0]] + frequencyBase[frequencyRange[0]];
+	float f2 = f * frequencyBase[frequencyRange[1]] + frequencyBase[frequencyRange[1]];
+	float f3 = f * frequencyBase[frequencyRange[2]] + frequencyBase[frequencyRange[2]];
 	
 	// OSC1
 	drate[0]      = masterFrequency;
@@ -303,16 +319,14 @@ void readAdcParameters()
 	amplitude[0]  = (Adc3.read_u16() >> 12) / 15.0f;
 
 	// OSC2
-	detune[1]     = Adc4.read() * 1.5f + 0.5f;
-	//drate[1]      = (f + detune[1]) * frequencyBase[frequencyRange[1]] + frequencyBase[frequencyRange[1]];
-	drate[1]      = detuning(f, frequencyBase[frequencyRange[1]], detune[1]);
+	detune[1]     = Adc4.read() * 2.0f - 1.0f;
+	drate[1]      = detuning(f2, detune[1]);
 	pulseWidth[1] = Adc5.read() * COUNT_OF_ENTRIES;
 	amplitude[1]  = (Adc6.read_u16() >> 12) / 15.0f;
 
 	// OSC3
-	detune[2]     = Adc7.read() * 1.5f + 0.5f;
-	//drate[2]      = (f + detune[2]) * frequencyBase[frequencyRange[2]] + frequencyBase[frequencyRange[2]];
-	drate[2]      = detuning(f, frequencyBase[frequencyRange[2]], detune[2]);
+	detune[2]     = Adc7.read() * 2.0f - 1.0f;
+	drate[2]      = detuning(f3, detune[2]);
 	pulseWidth[2] = Adc8.read() * COUNT_OF_ENTRIES;
 	amplitude[2]  = (Adc9.read_u16() >> 12) / 15.0f;
 }
