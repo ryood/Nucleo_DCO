@@ -37,7 +37,7 @@ public:
 	}
 	
 	float get() {
-		pc.printf("%f\t%f\t%f\t%f\t%d\r\n", data, prev, next, delta, division);
+		//pc.printf("%f\t%f\t%f\t%f\t%d\r\n", data, prev, next, delta, division);
 
 		data += delta;
 		if (delta >= 0.0f && data >= next) {
