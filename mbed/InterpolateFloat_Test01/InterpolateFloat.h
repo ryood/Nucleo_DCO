@@ -19,26 +19,26 @@ public:
 		if (division == 0) {
 			division = 1;
 		}
-		//pc.printf("%f\t%f\t%f\t%f\t%d\r\n", data, prev, next, delta, division);
 	}
 	
 	~InterpolateFloat() {}
 
-	void setDivision(uint16_t _division) {
+	void setDivision(uint16_t _division)
+	{
 		if (division > 0) {
 			division = _division;
 		}
 	}
 	
-	void setNext(float _next) {
+	void setNext(float _next)
+	{
 		next = _next;
 		prev = data;
 		delta = (next - prev) / division;
 	}
 	
-	float get() {
-		//pc.printf("%f\t%f\t%f\t%f\t%d\r\n", data, prev, next, delta, division);
-
+	float get()
+	{
 		data += delta;
 		if (delta >= 0.0f && data >= next) {
 			data = next;

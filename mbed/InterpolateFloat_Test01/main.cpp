@@ -13,7 +13,7 @@
 #define TITLE_STR3  (__TIME__)
 
 #define ADC_NUM	(10)
-#define INTERPOLATE_DIVISION	(8)
+#define INTERPOLATE_DIVISION	(32)
 
 AnalogIn Adc[ADC_NUM] = {
 	AnalogIn(PA_3),
