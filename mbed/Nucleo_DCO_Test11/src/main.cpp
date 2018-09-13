@@ -21,7 +21,7 @@
 #define TITLE_STR3  (__TIME__)
 
 #define OSC_NUM              (3)
-#define FREQUENCY_RANGE_MAX  (8)
+#define FREQUENCY_RANGE_MAX  (10)
 #define REF_CLOCK            (100000)  // 100kHz
 
 #define DEBOUNCE_DELAY       (10000)  // usec
@@ -100,18 +100,21 @@ const char* waveShapeName[] = {
 };
 
 const char* frequencyRangeName[FREQUENCY_RANGE_MAX] = {
-	"64'",
-	"32'",
-	"16'",
-	" 8'",
-	" 4'",
-	" 2'",
-	" 1'",
-	".5'"
+	"A-1",
+	" A0",
+	" A1",
+	" A2",
+	" A3",
+	" A4",
+	" A5",
+	" A6",
+	" A7",
+	" A8"
 };
 
 const double frequencyBase[FREQUENCY_RANGE_MAX] = {
-	27.5, 55.0, 110.0, 220.0, 440.0, 880.0, 1760.0, 3520.0
+//  A-1    A0    A1    A2     A3     A4     A5     A6      A7      A8
+	13.75, 27.5, 55.0, 110.0, 220.0, 440.0, 880.0, 1760.0, 3520.0, 7040.0
 };
 
 double masterFrequency = 1000.0;
@@ -130,7 +133,7 @@ float amplitude[OSC_NUM]       // output amplitude (0.0 ~ 1.0)
 int waveShape[OSC_NUM]
 	= { WS_SAWUP, WS_SAWUP, WS_SAWUP };
 int frequencyRange[OSC_NUM]
-	= { 2, 2, 2 };
+	= { 2, 3, 4 };
 
 // DDS
 volatile uint32_t phaccu[OSC_NUM];
