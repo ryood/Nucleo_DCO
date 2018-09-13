@@ -9,7 +9,8 @@ Nucleo_DCO_Test07 u8g2-mbed + DDS(3OSC) + 内蔵ADCの結合テスト
 Nucleo_DCO_Test08 + 各種波形出力
 Nucleo_DCO_Test09 + タクトスイッチ(InterruptIn)の入力
 Nucleo_DCO_Test10 + OLEDの表示モード
-Nucleo_DCO_Test10 + Frequency Range切り替え
+Nucleo_DCO_Test11 + Frequency Range切り替え
+Nucleo_DCO_Test12 + OLEDの表示項目を増やす
 
 InterruptIn_Test01 InterruptIn（チャタリング対策）のテスト
 InterruptIn_Test02 複数のInterruptIn（チャタリング対策）のテスト: F446RE
