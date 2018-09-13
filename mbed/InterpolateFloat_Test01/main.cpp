@@ -51,10 +51,6 @@ void update()
 		printf("%1.3f\t", v);
 	}
 	printf("\r\n");
-	/*
-	float v = interpolate.get();
-	pc.printf("%1.3f\r\n", v);
-	*/
 }
 
 int main()
@@ -75,9 +71,5 @@ int main()
 			float v = Adc[i].read();
 			interpolate[i].setNext(v);
 		}
-		/*
-		float v = Adc1.read();
-		interpolate.setNext(v);
-		*/
 	}
 }
