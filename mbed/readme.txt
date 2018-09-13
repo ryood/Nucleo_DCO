@@ -12,11 +12,13 @@ Nucleo_DCO_Test10 + OLEDの表示モード
 Nucleo_DCO_Test11 + Frequency Range切り替え
 Nucleo_DCO_Test12 + OLEDの表示項目を増やす
 
-InterruptIn_Test01 InterruptIn（チャタリング対策）のテスト
-InterruptIn_Test02 複数のInterruptIn（チャタリング対策）のテスト: F446RE
-InterruptIn_Test03 複数のInterruptIn（チャタリング対策）のテスト: F767ZI
-InternalADC_Test01 内蔵ADCの読み取り時間を計測
-MCP3008_Test01     MCP3008の読み取り時間を計測
-random_Test01      random()関数の処理時間を計測
-Pot_Panel_Test01   POT_Panelの読み取りテスト：F446RE
-Pot_Panel_Test02   POT_Panelの読み取りテスト：F767ZI
+AverageAnalogIN_Test    AverageAnalogIn(移動平均付きAnalogIn)のテスト
+InternalADC_Test01      内蔵ADCの読み取り時間を計測
+InterpolateFloat_Test01 InterpolateFloat(float型を補間)のテスト
+InterruptIn_Test01      InterruptIn（チャタリング対策）のテスト
+InterruptIn_Test02      複数のInterruptIn（チャタリング対策）のテスト: F446RE
+InterruptIn_Test03      複数のInterruptIn（チャタリング対策）のテスト: F767ZI
+MCP3008_Test01          MCP3008の読み取り時間を計測
+random_Test01           random()関数の処理時間を計測
+Pot_Panel_Test01        POT_Panelの読み取りテスト：F446RE
+Pot_Panel_Test02        POT_Panelの読み取りテスト：F767ZI
