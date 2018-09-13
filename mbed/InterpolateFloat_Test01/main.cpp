@@ -13,7 +13,8 @@
 #define TITLE_STR3  (__TIME__)
 
 #define ADC_NUM	(10)
-#define INTERPOLATE_DIVISION	(32)
+#define INTERPOLATE_DIVISION	(8)
+#define PRUNING_FACTOR	(1.05f)
 
 AnalogIn Adc[ADC_NUM] = {
 	AnalogIn(PA_3),
@@ -48,11 +49,22 @@ void update()
 {
 	for (int i = 0; i < ADC_NUM; i++) {
 		float v = interpolate[i].get();
-		printf("%1.3f\t", v);
+		printf("%1.3f,\t", v);
 	}
 	printf("\r\n");
 }
 
+inline float pruning(float v)
+{
+	float ret = ((v - 0.5f) * PRUNING_FACTOR) + 0.5f;
+	if (ret < 0.0f) {
+		ret = 0.0f;
+	} else if (ret > 1.0f) {
+		ret = 1.0f;
+	}
+	return ret;
+}
+	
 int main()
 {
 	pc.baud(115200);
@@ -68,7 +80,7 @@ int main()
 	
 	while (1) {
 		for (int i = 0; i < ADC_NUM; i++) {
-			float v = Adc[i].read();
+			float v = pruning(Adc[i].read());
 			interpolate[i].setNext(v);
 		}
 	}
