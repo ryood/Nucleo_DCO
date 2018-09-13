@@ -24,7 +24,7 @@
 #define FREQUENCY_RANGE_MAX  (10)
 #define REF_CLOCK            (100000)  // 100kHz
 
-#define DEBOUNCE_DELAY       (10000)  // usec
+#define DEBOUNCE_DELAY       (20000)  // usec
 
 // Pin Assign
 AnalogOut Dac1(PA_4);
@@ -96,8 +96,8 @@ enum {
 const char* waveShapeName[] = {
 	"SIN",
 	"TRI",
-	"SUP",
-	"SDN",
+	"SWU",
+	"SWD",
 	"SQR",
 	"NOS",
 	"XXX"
