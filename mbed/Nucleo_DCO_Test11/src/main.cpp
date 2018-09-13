@@ -21,7 +21,7 @@
 #define TITLE_STR3  (__TIME__)
 
 #define OSC_NUM              (3)
-#define FREQUENCY_RANGE_MAX  (6)
+#define FREQUENCY_RANGE_MAX  (8)
 #define REF_CLOCK            (100000)  // 100kHz
 
 #define DEBOUNCE_DELAY       (10000)  // usec
@@ -99,13 +99,19 @@ const char* waveShapeName[] = {
 	"XXX"
 };
 
-const char* frequencyRangeName[] = {
+const char* frequencyRangeName[FREQUENCY_RANGE_MAX] = {
 	"64'",
 	"32'",
 	"16'",
 	" 8'",
 	" 4'",
-	" 2'"
+	" 2'",
+	" 1'",
+	".5'"
+};
+
+const double frequencyBase[FREQUENCY_RANGE_MAX] = {
+	27.5, 55.0, 110.0, 220.0, 440.0, 880.0, 1760.0, 3520.0
 };
 
 double drate[OSC_NUM]          // output rate (Hz)
@@ -119,7 +125,7 @@ float amplitude[OSC_NUM]       // output amplitude (0.0 ~ 1.0)
 int waveShape[OSC_NUM]
 	= { WS_SAWUP, WS_SAWUP, WS_SAWUP };
 int frequencyRange[OSC_NUM]
-	= { 1, 2, 3 };
+	= { 2, 2, 2 };
 
 // DDS
 volatile uint32_t phaccu[OSC_NUM];
@@ -281,17 +287,17 @@ void debouncerInitialize()
 void readAdcParameters()
 {
 	// OSC1
-	drate[0]      = Adc1.read() * 55.0 + 55.0;
+	drate[0]      = Adc1.read() * 3.0 * frequencyBase[frequencyRange[0]] + frequencyBase[frequencyRange[0]];
 	pulseWidth[0] = Adc2.read() * COUNT_OF_ENTRIES;
 	amplitude[0]  = (Adc3.read_u16() >> 12) / 15.0f;
 
 	// OSC2
-	drate[1]      = Adc4.read() * 110.0 + 110.0;
+	drate[1]      = Adc4.read() * 3.0 * frequencyBase[frequencyRange[1]] + frequencyBase[frequencyRange[1]];
 	pulseWidth[1] = Adc5.read() * COUNT_OF_ENTRIES;
 	amplitude[1]  = (Adc6.read_u16() >> 12) / 15.0f;
 
 	// OSC3
-	drate[2]      = Adc7.read() * 220.0 + 220.0;
+	drate[2]      = Adc7.read() * 3.0 * frequencyBase[frequencyRange[2]] + frequencyBase[frequencyRange[2]];
 	pulseWidth[2] = Adc8.read() * COUNT_OF_ENTRIES;
 	amplitude[2]  = (Adc9.read_u16() >> 12) / 15.0f;
 }
