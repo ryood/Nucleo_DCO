@@ -11,6 +11,7 @@ Nucleo_DCO_Test09 + タクトスイッチ(InterruptIn)の入力
 Nucleo_DCO_Test10 + OLEDの表示モード
 Nucleo_DCO_Test11 + Frequency Range切り替え
 Nucleo_DCO_Test12 + OLEDの表示項目を増やす
+Nucleo_DCO_Test13 + OLEDをSSD1306 128x64 I2Cに変更
 
 AverageAnalogIN_Test01  AverageAnalogIn(移動平均付きAnalogIn)のテスト
 FloatingPoint_Test01    浮動小数点数演算の実行時間を計測: Mbed OS 5
