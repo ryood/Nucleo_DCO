@@ -273,11 +273,9 @@ void interruptHandler7() { debouncer7.attach_us(&debounce7, DEBOUNCE_DELAY); }
 
 void u8g2Initialize()
 {
-	//u8g2_Setup_ssd1306_i2c_128x32_univision_f(&U8g2Handler, U8G2_R0, u8x8_byte_sw_i2c, u8x8_gpio_and_delay_mbed);
 	u8g2_Setup_ssd1306_i2c_128x64_noname_f(&U8g2Handler, U8G2_R0, u8x8_byte_sw_i2c, u8x8_gpio_and_delay_mbed);
 	u8g2_InitDisplay(&U8g2Handler);
 	u8g2_SetPowerSave(&U8g2Handler, 0);
-	//u8g2_ClearBuffer(&U8g2Handler);
 }
 
 void debouncerInitialize()
@@ -415,24 +413,6 @@ void displayTitle()
 	u8g2_SendBuffer(&U8g2Handler);
 }
 
-/*
-void displayFps(float elapse, int count)
-{
-	char strBuffer[20];
-	
-	u8g2_ClearBuffer(&U8g2Handler);
-	u8g2_SetFont(&U8g2Handler, u8g2_font_10x20_mf);
-
-	sprintf(strBuffer, "%.1f %.1fs", count/elapse, elapse);
-	u8g2_DrawStr(&U8g2Handler, 0, 16, strBuffer);
-
-	sprintf(strBuffer, "%08d", count);
-	u8g2_DrawStr(&U8g2Handler, 0, 32, strBuffer);
-
-	u8g2_SendBuffer(&U8g2Handler);
-}
-*/
-
 void displayNormal(float fps)
 {
 	char strBuffer[20];
@@ -460,24 +440,6 @@ void displayNormal(float fps)
 	u8g2_SendBuffer(&U8g2Handler);
 }
 
-/*
-void displayDetune()
-{
-	char strBuffer[20];
-	
-	u8g2_ClearBuffer(&U8g2Handler);
-	u8g2_SetFont(&U8g2Handler, u8g2_font_10x20_mf);
-
-	sprintf(strBuffer, "%9.3lf Hz", masterFrequency); 
-	u8g2_DrawStr(&U8g2Handler, 0, 16, strBuffer);
-
-	sprintf(strBuffer, "%6.3lf %6.3lf", detune[1], detune[2]);
-	u8g2_DrawStr(&U8g2Handler, 0, 32, strBuffer);
-
-	u8g2_SendBuffer(&U8g2Handler);
-}
-*/
-
 void displayFrequency()
 {
 	char strBuffer[20];
@@ -496,11 +458,6 @@ void displayFrequency()
 	// Detune
 	sprintf(strBuffer, "%6.3lf %6.3lf", detune[1], detune[2]);
 	u8g2_DrawStr(&U8g2Handler, 0, 64, strBuffer);
-
-	/*
-	sprintf(strBuffer, "#%d %6.3lf", n+1, detune[n]);
-	u8g2_DrawStr(&U8g2Handler, 0, 16, strBuffer);
-	*/
 
 	u8g2_SendBuffer(&U8g2Handler);
 }
