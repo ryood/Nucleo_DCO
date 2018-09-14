@@ -12,7 +12,8 @@ Nucleo_DCO_Test10 + OLEDの表示モード
 Nucleo_DCO_Test11 + Frequency Range切り替え
 Nucleo_DCO_Test12 + OLEDの表示項目を増やす
 
-AverageAnalogIN_Test    AverageAnalogIn(移動平均付きAnalogIn)のテスト
+AverageAnalogIN_Test01  AverageAnalogIn(移動平均付きAnalogIn)のテスト
+FloatingPoint_Test01    浮動小数点数演算の実行時間を計測: Mbed OS 5
 InternalADC_Test01      内蔵ADCの読み取り時間を計測
 InterpolateFloat_Test01 InterpolateFloat(float型を補間)のテスト
 InterruptIn_Test01      InterruptIn（チャタリング対策）のテスト
