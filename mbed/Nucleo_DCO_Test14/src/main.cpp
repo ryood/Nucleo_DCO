@@ -25,7 +25,7 @@
 
 #define OSC_NUM              (3)
 #define FREQUENCY_RANGE_MAX  (10)
-#define REF_CLOCK            (100000)  // 100kHz
+#define REF_CLOCK            (50000)  // 50kHz
 
 #define DEBOUNCE_DELAY       (20000)   // usec
 
@@ -200,11 +200,63 @@ void internalDacWrite(int ch, uint16_t val)
     }
 }
 
+// Detuinig frequency
+//
+// param
+//  frequency:  base frequency (0.0 ~)
+//  detune:    detune ratio (-1.0 ~ 1.0)
+inline double detuning(double frequency, double detune)
+{
+	// pseudo exp. curve
+	
+	if (detune > 0.0) {
+		detune = detune + 1.0;
+	} else {
+		detune = detune * 0.5 + 1.0;
+	}
+	return frequency * detune;
+}
+
+void readAdcParameters()
+{
+	float f  = iAdc1.get();
+
+	// Frequency Range
+	masterFrequency = f * frequencyBase[frequencyRange[0]] + frequencyBase[frequencyRange[0]];
+	float f2 = f * frequencyBase[frequencyRange[1]] + frequencyBase[frequencyRange[1]];
+	float f3 = f * frequencyBase[frequencyRange[2]] + frequencyBase[frequencyRange[2]];
+	
+	// OSC1
+	drate[0]      = masterFrequency;
+	pulseWidth[0] = iAdc2.get() * COUNT_OF_ENTRIES;
+	amplitude[0]  = iAdc3.get();
+
+	// OSC2
+	detune[1]     = iAdc4.get() * 2.0f - 1.0f;
+	drate[1]      = detuning(f2, detune[1]);
+	pulseWidth[1] = iAdc5.get() * COUNT_OF_ENTRIES;
+	amplitude[1]  = iAdc6.get();
+
+	// OSC3
+	detune[2]     = iAdc7.get() * 2.0f - 1.0f;
+	drate[2]      = detuning(f3, detune[2]);
+	pulseWidth[2] = iAdc8.get() * COUNT_OF_ENTRIES;
+	amplitude[2]  = iAdc9.get();
+	
+	// Master amplitude
+	masterAmplitude = iAdc10.get();
+}
+
 void update()
 {
 #if (PIN_CHECK)
     CheckPin1.write(1);
 #endif
+
+	readAdcParameters();
+	for (int i = 0; i < OSC_NUM; i++) {
+		tword_m[i] = pow(2.0, 32) * drate[i] / REF_CLOCK;  // calculate DDS tuning word;
+	}
 
 	int32_t sum = 0;
 	for (int i = 0; i < OSC_NUM; i++) {
@@ -310,53 +362,6 @@ void debouncerInitialize()
 //-------------------------------------------------------------------------------------------------
 // Input process
 //
-
-// Detuinig frequency
-//
-// param
-//  frequency:  base frequency (0.0 ~)
-//  detune:    detune ratio (-1.0 ~ 1.0)
-inline double detuning(double frequency, double detune)
-{
-	// pseudo exp. curve
-	
-	if (detune > 0.0) {
-		detune = detune + 1.0;
-	} else {
-		detune = detune * 0.5 + 1.0;
-	}
-	return frequency * detune;
-}
-
-void readAdcParameters()
-{
-	float f  = iAdc1.get();
-
-	// Frequency Range
-	masterFrequency = f * frequencyBase[frequencyRange[0]] + frequencyBase[frequencyRange[0]];
-	float f2 = f * frequencyBase[frequencyRange[1]] + frequencyBase[frequencyRange[1]];
-	float f3 = f * frequencyBase[frequencyRange[2]] + frequencyBase[frequencyRange[2]];
-	
-	// OSC1
-	drate[0]      = masterFrequency;
-	pulseWidth[0] = iAdc2.get() * COUNT_OF_ENTRIES;
-	amplitude[0]  = iAdc3.get();
-
-	// OSC2
-	detune[1]     = iAdc4.get() * 2.0f - 1.0f;
-	drate[1]      = detuning(f2, detune[1]);
-	pulseWidth[1] = iAdc5.get() * COUNT_OF_ENTRIES;
-	amplitude[1]  = iAdc6.get();
-
-	// OSC3
-	detune[2]     = iAdc7.get() * 2.0f - 1.0f;
-	drate[2]      = detuning(f3, detune[2]);
-	pulseWidth[2] = iAdc8.get() * COUNT_OF_ENTRIES;
-	amplitude[2]  = iAdc9.get();
-	
-	// Master amplitude
-	masterAmplitude = iAdc10.get();
-}
 
 void readAdc()
 {
@@ -532,10 +537,7 @@ int main()
 #endif
 
 		readAdc();
-		readAdcParameters();
-		for (int i = 0; i < OSC_NUM; i++) {
-			tword_m[i] = pow(2.0, 32) * drate[i] / REF_CLOCK;  // calculate DDS tuning word;
-		}
+
 		
 		readButtonParameters();
 		
