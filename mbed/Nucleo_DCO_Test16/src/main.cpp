@@ -408,6 +408,14 @@ float adcRead8bit(AnalogIn& adc)
 	return (float)v / 255.0f;
 }
 
+inline
+float adcRead10bit(AnalogIn& adc)
+{
+	uint16_t v = adc.read_u16();
+	v = v >> 6;
+	return (float)v / 1023.0f;
+}
+
 inline 
 float pruning(float v)
 {
@@ -422,16 +430,16 @@ float pruning(float v)
 
 void readAdc()
 {
-	iAdc1.setNext(pruning(adcRead8bit(Adc1)));
-	iAdc2.setNext(pruning(adcRead8bit(Adc2)));
-	iAdc3.setNext(pruning(adcRead8bit(Adc3)));
-	iAdc4.setNext(pruning(adcRead8bit(Adc4)));
-	iAdc5.setNext(pruning(adcRead8bit(Adc5)));
-	iAdc6.setNext(pruning(adcRead8bit(Adc6)));
-	iAdc7.setNext(pruning(adcRead8bit(Adc7)));
-	iAdc8.setNext(pruning(adcRead8bit(Adc8)));
-	iAdc9.setNext(pruning(adcRead8bit(Adc9)));
-	iAdc10.setNext(pruning(adcRead8bit(Adc10)));
+	iAdc1.setNext(pruning(adcRead10bit(Adc1)));
+	iAdc2.setNext(pruning(adcRead10bit(Adc2)));
+	iAdc3.setNext(pruning(adcRead10bit(Adc3)));
+	iAdc4.setNext(pruning(adcRead10bit(Adc4)));
+	iAdc5.setNext(pruning(adcRead10bit(Adc5)));
+	iAdc6.setNext(pruning(adcRead10bit(Adc6)));
+	iAdc7.setNext(pruning(adcRead10bit(Adc7)));
+	iAdc8.setNext(pruning(adcRead10bit(Adc8)));
+	iAdc9.setNext(pruning(adcRead10bit(Adc9)));
+	iAdc10.setNext(pruning(adcRead10bit(Adc10)));
 }
 
 void readButtonParameters()
