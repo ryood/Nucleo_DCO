@@ -1,11 +1,12 @@
 /*
-   Nucleo DCO Test15
+   Nucleo DCO Test16
 
    u8g2-mbed + DDS(3OSC) + InternalADC + InterruptIn + DisplayMode + FrequencyRange
    64k wavetable
    SSD1306 128x64 I2C
    Interpolate ADC
    ADC: n bit precision
+   Rotary Encoder
    
    2018.09.15
 
@@ -13,6 +14,7 @@
 #include "mbed.h"
 #include "u8g2.h"
 #include "InterpolateFloat.h"
+#include "RotaryEncoder.h"
 #include <math.h>
 
 #include "wavetable_12bit_64k.h"
@@ -20,7 +22,7 @@
 
 #define PIN_CHECK   (1)
 #define UART_TRACE  (1)
-#define TITLE_STR1  ("DCO Test15")
+#define TITLE_STR1  ("DCO Test16")
 #define TITLE_STR2  (__DATE__)
 #define TITLE_STR3  (__TIME__)
 
@@ -29,9 +31,20 @@
 #define REF_CLOCK            (62500)  // Hz
 
 #define DEBOUNCE_DELAY       (20000)  // usec
+#define ROT_ENC_INTERVAL     (2000)   // usec
 
 #define INTERPOLATE_DIVISION (32)
 #define PRUNING_FACTOR       (1.05f)
+
+enum {
+	WS_SIN,
+	WS_TRI,
+	WS_SAWUP,
+	WS_SAWDOWN,
+	WS_SQR,
+	WS_NOISE,
+	WS_MAX
+};
 
 // Pin Assign
 AnalogOut Dac1(PA_4);
@@ -71,6 +84,10 @@ InterruptIn Button5(PE_7,  PullUp);
 InterruptIn Button6(PE_8,  PullUp);
 InterruptIn Button7(PE_0,  PullUp);
 
+// Rotary Encoder
+RotaryEncoder RotEnc1(PC_8,  PC_9,  0, WS_MAX - 1,              WS_SIN);
+RotaryEncoder RotEnc2(PC_10, PC_11, 0, FREQUENCY_RANGE_MAX - 1, 4);
+
 #if (PIN_CHECK)
 DigitalOut CheckPin1(D4);
 DigitalOut CheckPin2(D5);
@@ -102,16 +119,7 @@ Ticker ddsTicker;
 Serial pc(USBTX, USBRX);
 #endif
 
-// Parameter
-enum {
-	WS_SIN,
-	WS_TRI,
-	WS_SAWUP,
-	WS_SAWDOWN,
-	WS_SQR,
-	WS_NOISE,
-	WS_MAX
-};
+// Const strings
 
 const char* waveShapeName[] = {
 	"SIN",
@@ -140,6 +148,8 @@ const double frequencyBase[FREQUENCY_RANGE_MAX] = {
 //  A-1    A0    A1    A2     A3     A4     A5     A6      A7      A8
 	13.75, 27.5, 55.0, 110.0, 220.0, 440.0, 880.0, 1760.0, 3520.0, 7040.0
 };
+
+// Parameter
 
 double masterFrequency = 1000.0;
 float masterAmplitude = 1.0f;
@@ -364,6 +374,12 @@ void debouncerInitialize()
 	Button7.fall(&interruptHandler7);
 }
 
+void rotEncInitialize()
+{
+	RotEnc1.setInterval(ROT_ENC_INTERVAL);
+	RotEnc2.setInterval(ROT_ENC_INTERVAL);
+}
+
 //-------------------------------------------------------------------------------------------------
 // Input process
 //
@@ -421,6 +437,7 @@ void readAdc()
 void readButtonParameters()
 {
 	// Wave shape
+	/*
 	if (isButtonPushed0) {
 		waveShape[0]++;
 		if (waveShape[0] >= WS_MAX) {
@@ -428,6 +445,7 @@ void readButtonParameters()
 		}
 		isButtonPushed0 = false;
 	}
+	*/
 	if (isButtonPushed1) {
 		waveShape[1]++;
 		if (waveShape[1] >= WS_MAX) {
@@ -444,6 +462,7 @@ void readButtonParameters()
 	}
 	
 	// Frequency range
+	/*
 	if (isButtonPushed3) {
 		frequencyRange[0]++;
 		if (frequencyRange[0] >= FREQUENCY_RANGE_MAX) {
@@ -451,6 +470,7 @@ void readButtonParameters()
 		}
 		isButtonPushed3 = false;
 	}
+	*/
 	if (isButtonPushed4) {
 		frequencyRange[1]++;
 		if (frequencyRange[1] >= FREQUENCY_RANGE_MAX) {
@@ -481,7 +501,12 @@ void readButtonParameters()
 		toDisplayOffMessage = true;
 		isButtonPushed7 = false;
 	}
+}
 
+void readRotEncParameters()
+{
+	waveShape[0]      = RotEnc1.getVal();
+	frequencyRange[0] = RotEnc2.getVal();
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -618,6 +643,7 @@ int main()
 	wait(2.0);
 
 	debouncerInitialize();
+	rotEncInitialize();
 	
 	for (int i = 0; i < OSC_NUM; i++) {
 		phaccu[i] = 0;
@@ -637,9 +663,8 @@ int main()
 #endif
 
 		readAdc();
-
-		
 		readButtonParameters();
+		readRotEncParameters();
 		
 #if (UART_TRACE)
 		for (int i = 0; i < OSC_NUM; i++) {
