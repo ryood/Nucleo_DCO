@@ -5,7 +5,7 @@
    64k wavetable
    SSD1306 128x64 I2C
    Interpolate ADC
-   ADC: 7bit precision
+   ADC: n bit precision
    
    2018.09.15
 
@@ -30,7 +30,7 @@
 
 #define DEBOUNCE_DELAY       (20000)  // usec
 
-#define INTERPOLATE_DIVISION (16)
+#define INTERPOLATE_DIVISION (32)
 #define PRUNING_FACTOR       (1.05f)
 
 // Pin Assign
@@ -368,25 +368,54 @@ void debouncerInitialize()
 // Input process
 //
 
+inline
+float adcRead6bit(AnalogIn& adc)
+{
+	uint16_t v = adc.read_u16();
+	v = v >> 10;
+	return (float)v / 63.0f;
+}
+
+inline
 float adcRead7bit(AnalogIn& adc)
 {
 	uint16_t v = adc.read_u16();
 	v = v >> 9;
-	return (float)(v / 127.0f);
+	return (float)v / 127.0f;
+}
+
+inline
+float adcRead8bit(AnalogIn& adc)
+{
+	uint16_t v = adc.read_u16();
+	v = v >> 8;
+	return (float)v / 255.0f;
+}
+
+inline 
+float pruning(float v)
+{
+	float ret = ((v - 0.5f) * PRUNING_FACTOR) + 0.5f;
+	if (ret < 0.0f) {
+		ret = 0.0f;
+	} else if (ret > 1.0f) {
+		ret = 1.0f;
+	}
+	return ret;
 }
 
 void readAdc()
 {
-	iAdc1.setNext(adcRead7bit(Adc1));
-	iAdc2.setNext(adcRead7bit(Adc2));
-	iAdc3.setNext(adcRead7bit(Adc3));
-	iAdc4.setNext(adcRead7bit(Adc4));
-	iAdc5.setNext(adcRead7bit(Adc5));
-	iAdc6.setNext(adcRead7bit(Adc6));
-	iAdc7.setNext(adcRead7bit(Adc7));
-	iAdc8.setNext(adcRead7bit(Adc8));
-	iAdc9.setNext(adcRead7bit(Adc9));
-	iAdc10.setNext(adcRead7bit(Adc10));
+	iAdc1.setNext(pruning(adcRead8bit(Adc1)));
+	iAdc2.setNext(pruning(adcRead8bit(Adc2)));
+	iAdc3.setNext(pruning(adcRead8bit(Adc3)));
+	iAdc4.setNext(pruning(adcRead8bit(Adc4)));
+	iAdc5.setNext(pruning(adcRead8bit(Adc5)));
+	iAdc6.setNext(pruning(adcRead8bit(Adc6)));
+	iAdc7.setNext(pruning(adcRead8bit(Adc7)));
+	iAdc8.setNext(pruning(adcRead8bit(Adc8)));
+	iAdc9.setNext(pruning(adcRead8bit(Adc9)));
+	iAdc10.setNext(pruning(adcRead8bit(Adc10)));
 }
 
 void readButtonParameters()
@@ -526,13 +555,13 @@ void displayAmplitude()
 	u8g2_SetFont(&U8g2Handler, u8g2_font_10x20_mf);
 
 	// Amplitude
-	sprintf(strBuffer, "A1: %1.3lf ", amplitude[0]); 
+	sprintf(strBuffer, "AMP1: %1.3lf ", amplitude[0]); 
 	u8g2_DrawStr(&U8g2Handler, 0, 16, strBuffer);
-	sprintf(strBuffer, "A2: %1.3lf ", amplitude[1]); 
+	sprintf(strBuffer, "AMP2: %1.3lf ", amplitude[1]); 
 	u8g2_DrawStr(&U8g2Handler, 0, 32, strBuffer);
-	sprintf(strBuffer, "A3: %1.3lf ", amplitude[2]); 
+	sprintf(strBuffer, "AMP3: %1.3lf ", amplitude[2]); 
 	u8g2_DrawStr(&U8g2Handler, 0, 48, strBuffer);
-	sprintf(strBuffer, "MA: %1.3lf ", masterAmplitude); 
+	sprintf(strBuffer, "MAMP: %1.3lf ", masterAmplitude); 
 	u8g2_DrawStr(&U8g2Handler, 0, 64, strBuffer);
 	
 	u8g2_SendBuffer(&U8g2Handler);
@@ -546,11 +575,11 @@ void displayPulseWidth()
 	u8g2_SetFont(&U8g2Handler, u8g2_font_10x20_mf);
 
 	// Pulse Width
-	sprintf(strBuffer, "P1: %1.3lf ", (float)pulseWidth[0] / UINT16_MAX); 
+	sprintf(strBuffer, "PW1: %1.3lf ", (float)pulseWidth[0] / UINT16_MAX); 
 	u8g2_DrawStr(&U8g2Handler, 0, 16, strBuffer);
-	sprintf(strBuffer, "P2: %1.3lf ", (float)pulseWidth[0] / UINT16_MAX); 
+	sprintf(strBuffer, "PW2: %1.3lf ", (float)pulseWidth[0] / UINT16_MAX); 
 	u8g2_DrawStr(&U8g2Handler, 0, 32, strBuffer);
-	sprintf(strBuffer, "P3: %1.3lf ", (float)pulseWidth[0] / UINT16_MAX); 
+	sprintf(strBuffer, "PW3: %1.3lf ", (float)pulseWidth[0] / UINT16_MAX); 
 	u8g2_DrawStr(&U8g2Handler, 0, 48, strBuffer);
 	
 	u8g2_SendBuffer(&U8g2Handler);
@@ -637,6 +666,8 @@ int main()
 				displayOffMessage();
 				toDisplayOffMessage = false;
 			}
+			t.reset();
+			count = 0;
 		}
 		else {
 			switch (displayMode) {

@@ -14,6 +14,7 @@ Nucleo_DCO_Test12 + OLEDの表示項目を増やす
 Nucleo_DCO_Test13 + OLEDをSSD1306 128x64 I2Cに変更
 Nucleo_DCO_Test14 + ADC読み取りを補間(InterpolateFloat)
 Nucleo_DCO_Test15 + ADC読み取りを7bit(128)精度に DisplayMode増やす OLED表示オフモード
+Nucleo_DCO_Test16 + Rotary Encoder
 
 AverageAnalogIN_Test01  AverageAnalogIn(移動平均付きAnalogIn)のテスト
 FloatingPoint_Test01    浮動小数点数演算の実行時間を計測: Mbed OS 5
@@ -26,3 +27,4 @@ MCP3008_Test01          MCP3008の読み取り時間を計測
 random_Test01           random()関数の処理時間を計測
 Pot_Panel_Test01        POT_Panelの読み取りテスト：F446RE
 Pot_Panel_Test02        POT_Panelの読み取りテスト：F767ZI
+RotaryEncoder_Test01    RotaryEncoderのテスト
