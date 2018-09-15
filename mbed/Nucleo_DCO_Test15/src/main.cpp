@@ -5,6 +5,7 @@
    64k wavetable
    SSD1306 128x64 I2C
    Interpolate ADC
+   ADC: 7bit precision
    
    2018.09.15
 
@@ -19,17 +20,17 @@
 
 #define PIN_CHECK   (1)
 #define UART_TRACE  (1)
-#define TITLE_STR1  ("DCO Test14")
+#define TITLE_STR1  ("DCO Test15")
 #define TITLE_STR2  (__DATE__)
 #define TITLE_STR3  (__TIME__)
 
 #define OSC_NUM              (3)
 #define FREQUENCY_RANGE_MAX  (10)
-#define REF_CLOCK            (50000)  // 50kHz
+#define REF_CLOCK            (62500)  // Hz
 
-#define DEBOUNCE_DELAY       (20000)   // usec
+#define DEBOUNCE_DELAY       (20000)  // usec
 
-#define INTERPOLATE_DIVISION (8)
+#define INTERPOLATE_DIVISION (16)
 #define PRUNING_FACTOR       (1.05f)
 
 // Pin Assign
@@ -84,10 +85,14 @@ enum {
 	DM_TITLE,
 	DM_NORMAL,
 	DM_FREQUENCY,
+	DM_AMPLITUDE,
+	DM_PULSE_WIDTH,
 	DM_MAX
 };
 
 int displayMode = DM_NORMAL;
+bool isDisplayOff = false;
+bool toDisplayOffMessage = false;
 
 // DDS Interruput
 Ticker ddsTicker;
@@ -363,18 +368,25 @@ void debouncerInitialize()
 // Input process
 //
 
+float adcRead7bit(AnalogIn& adc)
+{
+	uint16_t v = adc.read_u16();
+	v = v >> 9;
+	return (float)(v / 127.0f);
+}
+
 void readAdc()
 {
-	iAdc1.setNext(Adc1.read());
-	iAdc2.setNext(Adc2.read());
-	iAdc3.setNext(Adc3.read());
-	iAdc4.setNext(Adc4.read());
-	iAdc5.setNext(Adc5.read());
-	iAdc6.setNext(Adc6.read());
-	iAdc7.setNext(Adc7.read());
-	iAdc8.setNext(Adc8.read());
-	iAdc9.setNext(Adc9.read());
-	iAdc10.setNext(Adc10.read());
+	iAdc1.setNext(adcRead7bit(Adc1));
+	iAdc2.setNext(adcRead7bit(Adc2));
+	iAdc3.setNext(adcRead7bit(Adc3));
+	iAdc4.setNext(adcRead7bit(Adc4));
+	iAdc5.setNext(adcRead7bit(Adc5));
+	iAdc6.setNext(adcRead7bit(Adc6));
+	iAdc7.setNext(adcRead7bit(Adc7));
+	iAdc8.setNext(adcRead7bit(Adc8));
+	iAdc9.setNext(adcRead7bit(Adc9));
+	iAdc10.setNext(adcRead7bit(Adc10));
 }
 
 void readButtonParameters()
@@ -433,6 +445,14 @@ void readButtonParameters()
 		}
 		isButtonPushed6 = false;
 	}
+	
+	// Display Off
+	if (isButtonPushed7) {
+		isDisplayOff = !isDisplayOff;
+		toDisplayOffMessage = true;
+		isButtonPushed7 = false;
+	}
+
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -484,17 +504,68 @@ void displayFrequency()
 	u8g2_SetFont(&U8g2Handler, u8g2_font_10x20_mf);
 
 	// Frequency
-	sprintf(strBuffer, "1: %7.1lf Hz", drate[0]); 
+	sprintf(strBuffer, "F1:%7.1lf Hz", drate[0]); 
 	u8g2_DrawStr(&U8g2Handler, 0, 16, strBuffer);
-	sprintf(strBuffer, "2: %7.1lf Hz", drate[1]); 
+	sprintf(strBuffer, "F2:%7.1lf Hz", drate[1]); 
 	u8g2_DrawStr(&U8g2Handler, 0, 32, strBuffer);
-	sprintf(strBuffer, "3: %7.1lf Hz", drate[2]); 
+	sprintf(strBuffer, "F3:%7.1lf Hz", drate[2]); 
 	u8g2_DrawStr(&U8g2Handler, 0, 48, strBuffer);
 	
 	// Detune
 	sprintf(strBuffer, "%6.3lf %6.3lf", detune[1], detune[2]);
 	u8g2_DrawStr(&U8g2Handler, 0, 64, strBuffer);
 
+	u8g2_SendBuffer(&U8g2Handler);
+}
+
+void displayAmplitude()
+{
+	char strBuffer[20];
+	
+	u8g2_ClearBuffer(&U8g2Handler);
+	u8g2_SetFont(&U8g2Handler, u8g2_font_10x20_mf);
+
+	// Amplitude
+	sprintf(strBuffer, "A1: %1.3lf ", amplitude[0]); 
+	u8g2_DrawStr(&U8g2Handler, 0, 16, strBuffer);
+	sprintf(strBuffer, "A2: %1.3lf ", amplitude[1]); 
+	u8g2_DrawStr(&U8g2Handler, 0, 32, strBuffer);
+	sprintf(strBuffer, "A3: %1.3lf ", amplitude[2]); 
+	u8g2_DrawStr(&U8g2Handler, 0, 48, strBuffer);
+	sprintf(strBuffer, "MA: %1.3lf ", masterAmplitude); 
+	u8g2_DrawStr(&U8g2Handler, 0, 64, strBuffer);
+	
+	u8g2_SendBuffer(&U8g2Handler);
+}
+
+void displayPulseWidth()
+{
+	char strBuffer[20];
+	
+	u8g2_ClearBuffer(&U8g2Handler);
+	u8g2_SetFont(&U8g2Handler, u8g2_font_10x20_mf);
+
+	// Pulse Width
+	sprintf(strBuffer, "P1: %1.3lf ", (float)pulseWidth[0] / UINT16_MAX); 
+	u8g2_DrawStr(&U8g2Handler, 0, 16, strBuffer);
+	sprintf(strBuffer, "P2: %1.3lf ", (float)pulseWidth[0] / UINT16_MAX); 
+	u8g2_DrawStr(&U8g2Handler, 0, 32, strBuffer);
+	sprintf(strBuffer, "P3: %1.3lf ", (float)pulseWidth[0] / UINT16_MAX); 
+	u8g2_DrawStr(&U8g2Handler, 0, 48, strBuffer);
+	
+	u8g2_SendBuffer(&U8g2Handler);
+}
+
+void displayOffMessage()
+{
+	char strBuffer[20];
+	
+	u8g2_ClearBuffer(&U8g2Handler);
+	u8g2_SetFont(&U8g2Handler, u8g2_font_10x20_mf);
+
+	sprintf(strBuffer, "DISPLAY OFF"); 
+	u8g2_DrawStr(&U8g2Handler, 4, 24, strBuffer);
+	
 	u8g2_SendBuffer(&U8g2Handler);
 }
 
@@ -560,16 +631,31 @@ int main()
 			t.reset();
 			count = 0;
 		}
-		switch (displayMode) {
-		case DM_TITLE:
-			displayTitle();
-			break;
-		case DM_NORMAL:
-			displayNormal(count / elapseTime);
-			break;
-		case DM_FREQUENCY:
-			displayFrequency();
-			break;
+		
+		if (isDisplayOff) {
+			if (toDisplayOffMessage) {
+				displayOffMessage();
+				toDisplayOffMessage = false;
+			}
+		}
+		else {
+			switch (displayMode) {
+			case DM_TITLE:
+				displayTitle();
+				break;
+			case DM_NORMAL:
+				displayNormal(count/elapseTime);
+				break;
+			case DM_FREQUENCY:
+				displayFrequency();
+				break;
+			case DM_AMPLITUDE:
+				displayAmplitude();
+				break;
+			case DM_PULSE_WIDTH:
+				displayPulseWidth();
+				break;
+			}
 		}
 
 		count++;
