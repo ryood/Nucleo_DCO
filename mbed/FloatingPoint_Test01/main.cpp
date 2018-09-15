@@ -12,6 +12,24 @@ void floatTest()
 {
 	int elapse = -1;
 	
+	// addf
+    t.start();
+    for (int i = 0; i < LOOP_N; i++) {
+        buffer[i] = (float)i + LOOP_N;
+    }
+    t.stop();
+    elapse = t.read_us();
+    pc.printf("addf\t%d\t%f\r\n", elapse, (float)elapse / LOOP_N);
+	
+	// subf
+    t.start();
+    for (int i = 0; i < LOOP_N; i++) {
+        buffer[i] = (float)i - LOOP_N;
+    }
+    t.stop();
+    elapse = t.read_us();
+    pc.printf("subf\t%d\t%f\r\n", elapse, (float)elapse / LOOP_N);
+
 	// mulf
     t.start();
     for (int i = 0; i < LOOP_N; i++) {
@@ -108,6 +126,24 @@ void doubleTest()
 {
 	int elapse = -1;
 	
+	// add
+    t.start();
+    for (int i = 0; i < LOOP_N; i++) {
+        buffer[i] = (double)i + LOOP_N;
+    }
+    t.stop();
+    elapse = t.read_us();
+    pc.printf("add\t%d\t%f\r\n", elapse, (float)elapse / LOOP_N);
+	
+	// sub
+    t.start();
+    for (int i = 0; i < LOOP_N; i++) {
+        buffer[i] = (double)i - LOOP_N;
+    }
+    t.stop();
+    elapse = t.read_us();
+    pc.printf("sub\t%d\t%f\r\n", elapse, (float)elapse / LOOP_N);
+
 	// mul
     t.start();
     for (int i = 0; i < LOOP_N; i++) {
