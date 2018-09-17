@@ -36,6 +36,8 @@
 #define INTERPOLATE_DIVISION (32)
 #define PRUNING_FACTOR       (1.05f)
 
+#define MASTER_FREQUENCY_OCT (3.0f)
+
 enum {
 	WS_SIN,
 	WS_TRI,
@@ -234,7 +236,7 @@ inline double detuning(double frequency, double detune)
 
 void readAdcParameters()
 {
-	float f  = iAdc1.get();
+	float f  = MASTER_FREQUENCY_OCT * iAdc1.get();
 
 	// Frequency Range
 	masterFrequency = f * frequencyBase[frequencyRange[0]] + frequencyBase[frequencyRange[0]];
@@ -416,6 +418,14 @@ float adcRead10bit(AnalogIn& adc)
 	return (float)v / 1023.0f;
 }
 
+inline
+float adcRead12bit(AnalogIn& adc)
+{
+	uint16_t v = adc.read_u16();
+	v = v >> 4;
+	return (float)v / 4095.0f;
+}
+
 inline 
 float pruning(float v)
 {
@@ -430,16 +440,16 @@ float pruning(float v)
 
 void readAdc()
 {
-	iAdc1.setNext(pruning(adcRead10bit(Adc1)));
-	iAdc2.setNext(pruning(adcRead10bit(Adc2)));
-	iAdc3.setNext(pruning(adcRead10bit(Adc3)));
-	iAdc4.setNext(pruning(adcRead10bit(Adc4)));
-	iAdc5.setNext(pruning(adcRead10bit(Adc5)));
-	iAdc6.setNext(pruning(adcRead10bit(Adc6)));
-	iAdc7.setNext(pruning(adcRead10bit(Adc7)));
-	iAdc8.setNext(pruning(adcRead10bit(Adc8)));
-	iAdc9.setNext(pruning(adcRead10bit(Adc9)));
-	iAdc10.setNext(pruning(adcRead10bit(Adc10)));
+	iAdc1.setNext(pruning(adcRead12bit(Adc1)));
+	iAdc2.setNext(pruning(adcRead12bit(Adc2)));
+	iAdc3.setNext(pruning(adcRead12bit(Adc3)));
+	iAdc4.setNext(pruning(adcRead12bit(Adc4)));
+	iAdc5.setNext(pruning(adcRead12bit(Adc5)));
+	iAdc6.setNext(pruning(adcRead12bit(Adc6)));
+	iAdc7.setNext(pruning(adcRead12bit(Adc7)));
+	iAdc8.setNext(pruning(adcRead12bit(Adc8)));
+	iAdc9.setNext(pruning(adcRead12bit(Adc9)));
+	iAdc10.setNext(pruning(adcRead12bit(Adc10)));
 }
 
 void readButtonParameters()
