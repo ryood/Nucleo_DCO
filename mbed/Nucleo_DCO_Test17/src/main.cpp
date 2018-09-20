@@ -7,6 +7,8 @@
    Interpolate ADC
    ADC: n bit precision
    Rotary Encoders
+   Leds
+   UART Trace FPS
    
    2018.09.20
 
@@ -728,6 +730,7 @@ int main()
     ddsTicker.attach_us(&update, interruptPeriodUs);
     
 	int count = 0;
+	bool toResetCount = false;
 	Timer t;
 	t.start();
     while (1) {
@@ -740,7 +743,7 @@ int main()
 		readRotEncParameters();
 		
 		float elapseTime = t.read();
-		if (elapseTime > 100.0f) {
+		if (elapseTime > 10.0f) {
 			t.reset();
 			count = 0;
 		}
@@ -752,10 +755,14 @@ int main()
 				displayOffMessage();
 				toDisplayOffMessage = false;
 			}
-			t.reset();
-			count = 0;
+			toResetCount = true;
 		}
 		else {
+			if (toResetCount) {
+				toResetCount = false;
+				t.reset();
+				count = 0;
+			}
 			switch (displayMode) {
 			case DM_TITLE:
 				displayTitle();
@@ -777,7 +784,7 @@ int main()
 		
 		count++;
 
-		#if (UART_TRACE)
+#if (UART_TRACE)
 		for (int i = 0; i < OSC_NUM; i++) {
 			pc.printf("%d  %d  %3.2lf\t%1.3f\t%d\t%1.3f:\t", 
 				waveShape[i],
@@ -788,7 +795,7 @@ int main()
 				amplitude[i]
 			);
 		}
-		pc.printf("%1.3f\t%d\r\n", masterAmplitude, displayMode);
+		pc.printf("%1.3f\t%d\t%4.1f\r\n", masterAmplitude, displayMode, count/elapseTime);
 #endif
 
 #if (PIN_CHECK)
