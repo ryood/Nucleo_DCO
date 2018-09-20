@@ -94,6 +94,12 @@ RotaryEncoder RotEnc4(PG_2,  PG_3,  0, FREQUENCY_RANGE_MAX - 1, 4);
 RotaryEncoder RotEnc5(PD_7,  PD_6,  0, WS_MAX - 1, WS_SIN);
 RotaryEncoder RotEnc6(PD_5,  PD_4,  0, FREQUENCY_RANGE_MAX - 1, 4);
 
+// LED
+DigitalOut Led1(PC_6);
+DigitalOut Led2(PB_15);
+DigitalOut Led3(PB_13);
+DigitalOut Led4(PB_12);
+
 #if (PIN_CHECK)
 DigitalOut CheckPin1(D4);
 DigitalOut CheckPin2(D5);
@@ -323,9 +329,14 @@ void update()
 	// limiter
 	if (sum < 0) {
 		sum = 0;
+		Led4 = 1;
 	}
 	else if (sum > 4095) {
 		sum = 4095;
+		Led4 = 1;
+	}
+	else {
+		Led4 = 0;
 	}
 
 	internalDacWrite(1, (uint16_t)sum);
@@ -388,6 +399,29 @@ void rotEncInitialize()
 	RotEnc4.setInterval(ROT_ENC_INTERVAL);
 	RotEnc5.setInterval(ROT_ENC_INTERVAL);
 	RotEnc6.setInterval(ROT_ENC_INTERVAL);
+}
+
+void ledsCheck()
+{
+	const float ledWait = 0.1f;
+	
+	for (int i = 0; i < 4; i++) {
+		Led1.write(1);
+		wait(ledWait);
+		Led1.write(0);
+		
+		Led2.write(1);
+		wait(ledWait);
+		Led2.write(0);
+		
+		Led3.write(1);
+		wait(ledWait);
+		Led3.write(0);
+
+		Led4.write(1);
+		wait(ledWait);
+		Led4.write(0);
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -471,7 +505,7 @@ void readButtonParameters()
 		}
 		isButtonPushed0 = false;
 	}
-	*/
+	
 	if (isButtonPushed1) {
 		waveShape[1]++;
 		if (waveShape[1] >= WS_MAX) {
@@ -486,7 +520,7 @@ void readButtonParameters()
 		}
 		isButtonPushed2 = false;
 	}
-	
+	*/
 	// Frequency range
 	/*
 	if (isButtonPushed3) {
@@ -496,7 +530,7 @@ void readButtonParameters()
 		}
 		isButtonPushed3 = false;
 	}
-	*/
+	
 	if (isButtonPushed4) {
 		frequencyRange[1]++;
 		if (frequencyRange[1] >= FREQUENCY_RANGE_MAX) {
@@ -511,7 +545,7 @@ void readButtonParameters()
 		}
 		isButtonPushed5 = false;
 	}
-	
+	*/
 	// Display Mode
 	if (isButtonPushed6) {
 		displayMode++;
@@ -653,6 +687,14 @@ void displayOffMessage()
 	u8g2_SendBuffer(&U8g2Handler);
 }
 
+void ledsWrite()
+{
+	// Pulse width  available
+	if (waveShape[0] == WS_SQR) { Led1 = 1; } else { Led1 = 0; }
+	if (waveShape[1] == WS_SQR) { Led2 = 1; } else { Led2 = 0; }
+	if (waveShape[2] == WS_SQR) { Led3 = 1; } else { Led3 = 0; }
+}
+
 //-------------------------------------------------------------------------------------------------
 // Main function
 //
@@ -670,7 +712,8 @@ int main()
 
 	u8g2Initialize();
 	displayTitle();
-	wait(2.0);
+
+	ledsCheck();
 
 	debouncerInitialize();
 	rotEncInitialize();
@@ -696,26 +739,14 @@ int main()
 		readButtonParameters();
 		readRotEncParameters();
 		
-#if (UART_TRACE)
-		for (int i = 0; i < OSC_NUM; i++) {
-			pc.printf("%d  %d  %3.2lf\t%1.3f\t%d\t%1.3f:\t", 
-				waveShape[i],
-				frequencyRange[i],
-				drate[i], 
-				detune[i],
-				pulseWidth[i],
-				amplitude[i]
-			);
-		}
-		pc.printf("%1.3f\t%d\r\n", masterAmplitude, displayMode);
-#endif
-		
 		float elapseTime = t.read();
 		if (elapseTime > 100.0f) {
 			t.reset();
 			count = 0;
 		}
 		
+		ledsWrite();
+
 		if (isDisplayOff) {
 			if (toDisplayOffMessage) {
 				displayOffMessage();
@@ -743,8 +774,22 @@ int main()
 				break;
 			}
 		}
-
+		
 		count++;
+
+		#if (UART_TRACE)
+		for (int i = 0; i < OSC_NUM; i++) {
+			pc.printf("%d  %d  %3.2lf\t%1.3f\t%d\t%1.3f:\t", 
+				waveShape[i],
+				frequencyRange[i],
+				drate[i], 
+				detune[i],
+				pulseWidth[i],
+				amplitude[i]
+			);
+		}
+		pc.printf("%1.3f\t%d\r\n", masterAmplitude, displayMode);
+#endif
 
 #if (PIN_CHECK)
 		CheckPin2.write(0);
