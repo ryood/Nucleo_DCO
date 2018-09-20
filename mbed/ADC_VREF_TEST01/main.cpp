@@ -7,9 +7,9 @@
 
 #include "mbed.h"
 
-#define INTERNAL_VOLTAGE  (1.21f)
+#define INTERNAL_VOLTAGE  (1.23f)
 #define VDIV_R1           (68.0f)   // 分圧用抵抗値1
-#define VDIV_R2           (31.0f)   // 分圧用抵抗値2 (補正あり)
+#define VDIV_R2           (33.0f)   // 分圧用抵抗値2
 #define VOLTAGE_DIVIDE    ( (VDIV_R1 + VDIV_R2) / VDIV_R2 )
 
 Serial pc(USBTX, USBRX);
@@ -24,6 +24,7 @@ int main()
 	pc.baud(115200);
 	pc.printf("\r\nADC_VREF Test01\r\n");
 	pc.printf("%s %s\r\n", __DATE__, __TIME__);
+	pc.printf("System Clock: %lu Hz\r\n\r\n", SystemCoreClock);
 	
 	float vref = VrefInt.read();
 	float vrefFactor = INTERNAL_VOLTAGE / vref;
