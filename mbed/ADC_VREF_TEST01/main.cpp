@@ -7,14 +7,15 @@
 
 #include "mbed.h"
 
-#define INTERNAL_VOLTAGE  (1.23f)
+#define INTERNAL_VOLTAGE  (1.22f)
 #define VDIV_R1           (68.0f)   // 分圧用抵抗値1
 #define VDIV_R2           (33.0f)   // 分圧用抵抗値2
 #define VOLTAGE_DIVIDE    ( (VDIV_R1 + VDIV_R2) / VDIV_R2 )
 
 Serial pc(USBTX, USBRX);
 
-AnalogIn Ain0(A0);
+//AnalogIn Ain0(A0);
+AnalogIn Ain0(PB_1);
 AnalogIn VrefInt(ADC_VREF);
 
 DigitalOut CheckPin1(D4);
