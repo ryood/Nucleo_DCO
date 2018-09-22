@@ -510,9 +510,6 @@ void readAdc()
 	float vrefFactor = INTERNAL_VOLTAGE / vref;
 	float v = Adc11.read();
 	powerVoltage = v * vrefFactor * VOLTAGE_DIVIDE;
-	
-	pc.printf("%5.3f,\t%5.3f,\t%5.3f,\t%5.3f V,\t%6.3f V\r\n", 
-		vref, vrefFactor, v, v * vrefFactor, powerVoltage);
 }
 
 void readButtonParameters()
@@ -578,6 +575,9 @@ void displayNormal(float fps)
 		frequencyRangeName[frequencyRange[2]]
 	);
 	u8g2_DrawStr(&U8g2Handler, 4, 32, strBuffer);
+
+	sprintf(strBuffer, "BAT: %.1f V", powerVoltage);
+	u8g2_DrawStr(&U8g2Handler, 4, 48, strBuffer);
 	
 	sprintf(strBuffer, "FPS: %.1f", fps);
 	u8g2_DrawStr(&U8g2Handler, 4, 64, strBuffer);
