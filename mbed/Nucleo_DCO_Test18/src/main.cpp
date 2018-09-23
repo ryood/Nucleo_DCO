@@ -87,14 +87,11 @@ InterpolateFloat iAdc10(0, INTERPOLATE_DIVISION);
 
 // Interrupt: cannot use same pin number
 //  not use PE_10
-InterruptIn Button0(PB_11, PullUp);
-InterruptIn Button1(PB_10, PullUp);
-InterruptIn Button2(PE_15, PullUp);
-InterruptIn Button3(PE_14, PullUp);
+InterruptIn Button1(PE_8, PullUp);
+InterruptIn Button2(PE_7, PullUp);
+InterruptIn Button3(PE_10, PullUp);
 InterruptIn Button4(PE_12, PullUp);
-InterruptIn Button5(PE_7,  PullUp);
-InterruptIn Button6(PE_8,  PullUp);
-InterruptIn Button7(PE_0,  PullUp);
+
 
 // Rotary Encoder
 RotaryEncoder RotEnc1(PC_8,  PC_9,  0, WS_MAX - 1, WS_SIN);
@@ -196,23 +193,15 @@ volatile uint32_t phaccu[OSC_NUM];
 volatile uint32_t tword_m[OSC_NUM];
 
 // Debounce
-Timeout debouncer0;
 Timeout debouncer1;
 Timeout debouncer2;
 Timeout debouncer3;
 Timeout debouncer4;
-Timeout debouncer5;
-Timeout debouncer6;
-Timeout debouncer7;
 
-volatile bool isButtonPushed0 = false;
 volatile bool isButtonPushed1 = false;
 volatile bool isButtonPushed2 = false;
 volatile bool isButtonPushed3 = false;
 volatile bool isButtonPushed4 = false;
-volatile bool isButtonPushed5 = false;
-volatile bool isButtonPushed6 = false;
-volatile bool isButtonPushed7 = false;
 
 // Power voltage
 float powerVoltage;
@@ -363,23 +352,15 @@ void update()
 // Debounce
 //
 
-void debounce0() { if (Button0.read() == 0) isButtonPushed0 = true; }
 void debounce1() { if (Button1.read() == 0) isButtonPushed1 = true; }
 void debounce2() { if (Button2.read() == 0) isButtonPushed2 = true; }
 void debounce3() { if (Button3.read() == 0) isButtonPushed3 = true; }
 void debounce4() { if (Button4.read() == 0) isButtonPushed4 = true; }
-void debounce5() { if (Button5.read() == 0) isButtonPushed5 = true; }
-void debounce6() { if (Button6.read() == 0) isButtonPushed6 = true; }
-void debounce7() { if (Button7.read() == 0) isButtonPushed7 = true; }
 
-void interruptHandler0() { debouncer0.attach_us(&debounce0, DEBOUNCE_DELAY); }
 void interruptHandler1() { debouncer1.attach_us(&debounce1, DEBOUNCE_DELAY); }
 void interruptHandler2() { debouncer2.attach_us(&debounce2, DEBOUNCE_DELAY); }
 void interruptHandler3() { debouncer3.attach_us(&debounce3, DEBOUNCE_DELAY); }
 void interruptHandler4() { debouncer4.attach_us(&debounce4, DEBOUNCE_DELAY); }
-void interruptHandler5() { debouncer5.attach_us(&debounce5, DEBOUNCE_DELAY); }
-void interruptHandler6() { debouncer6.attach_us(&debounce6, DEBOUNCE_DELAY); }
-void interruptHandler7() { debouncer7.attach_us(&debounce7, DEBOUNCE_DELAY); }
 
 //-------------------------------------------------------------------------------------------------
 // Initialize
@@ -394,14 +375,10 @@ void u8g2Initialize()
 
 void debouncerInitialize()
 {
-	Button0.fall(&interruptHandler0);
 	Button1.fall(&interruptHandler1);
 	Button2.fall(&interruptHandler2);
 	Button3.fall(&interruptHandler3);
 	Button4.fall(&interruptHandler4);
-	Button5.fall(&interruptHandler5);
-	Button6.fall(&interruptHandler6);
-	Button7.fall(&interruptHandler7);
 }
 
 void rotEncInitialize()
@@ -515,19 +492,19 @@ void readAdc()
 void readButtonParameters()
 {
 	// Display Mode
-	if (isButtonPushed6) {
+	if (isButtonPushed1) {
 		displayMode++;
 		if (displayMode >= DM_MAX) {
 			displayMode = 0;
 		}
-		isButtonPushed6 = false;
+		isButtonPushed1 = false;
 	}
 	
 	// Display Off
-	if (isButtonPushed7) {
+	if (isButtonPushed2) {
 		isDisplayOff = !isDisplayOff;
 		toDisplayOffMessage = true;
-		isButtonPushed7 = false;
+		isButtonPushed2 = false;
 	}
 }
 
