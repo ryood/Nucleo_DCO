@@ -16,6 +16,7 @@ Nucleo_DCO_Test14 + ADC読み取りを補間(InterpolateFloat)
 Nucleo_DCO_Test15 + ADC読み取りを7bit(128)精度に DisplayMode増やす OLED表示オフモード
 Nucleo_DCO_Test16 + Rotary Encoder
 Nucleo_DCO_Test17 + Rotary Encoderを増やす, LED, UART fps
+Nucleo_DCO_Test18 Clean up
 
 ADC_VREF_Test01         ADC_VREFの読み取り
 AverageAnalogIN_Test01  AverageAnalogIn(移動平均付きAnalogIn)のテスト
