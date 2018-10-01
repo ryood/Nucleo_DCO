@@ -10,6 +10,7 @@
    Leds
    UART Trace FPS
    Power voltage check
+   Thread
    
    2018.10.01
 
@@ -36,7 +37,7 @@
 #define DEBOUNCE_DELAY       (20000)  // usec
 #define ROT_ENC_INTERVAL     (2000)   // usec
 
-#define INTERPOLATE_DIVISION (32)
+#define INTERPOLATE_DIVISION (64)
 #define PRUNING_FACTOR       (1.05f)
 
 #define MASTER_FREQUENCY_OCT (3.0f)
@@ -131,6 +132,10 @@ bool toDisplayOffMessage = false;
 // DDS Interruput
 Ticker ddsTicker;
 
+// Thread
+Thread threadReadAdc;
+Thread threadDisplay;
+
 // UART
 #if (UART_TRACE)
 Serial pc(USBTX, USBRX);
@@ -202,10 +207,10 @@ volatile bool isButtonPushed3 = false;
 volatile bool isButtonPushed4 = false;
 
 // Power voltage
-float powerVoltage;
+volatile float powerVoltage;
 
 // Suppress ADC
-bool isSuppressAdc = false;
+volatile bool isSuppressAdc = false;
 
 //-------------------------------------------------------------------------------------------------
 // DDS Interrupt Service Routine
@@ -651,61 +656,32 @@ void ledsWrite()
 }
 
 //-------------------------------------------------------------------------------------------------
-// Main function
+// Thread
 //
-int main()
+
+void readAdcHandler()
 {
-#if (UART_TRACE)
-	pc.baud(115200);
-	pc.printf("\r\n%s\r\n", TITLE_STR1);
-	pc.printf("%s %s\r\n", TITLE_STR2, TITLE_STR3);
-	pc.printf("UINT32_MAX: %lu\r\n", UINT32_MAX);
-	pc.printf("System Clock: %lu Hz\r\n", SystemCoreClock);
-	pc.printf("CLOCKS_PER_SEC: %d\r\n", CLOCKS_PER_SEC);
-	pc.printf("RAND_MAX: %d\r\n", RAND_MAX);
-	pc.printf("INTERNAL_VOLTAGE: %f\r\n", INTERNAL_VOLTAGE);
-#endif
-
-	u8g2Initialize();
-	displayTitle();
-
-	ledsCheck();
-
-	debouncerInitialize();
-	rotEncInitialize();
-	
-	for (int i = 0; i < OSC_NUM; i++) {
-		phaccu[i] = 0;
-		tword_m[i] = pow(2.0, 32) * drate[i] / REF_CLOCK;  // calculate DDS tuning word;
-	}
-    
-    // 1.0s / 1.0us = 1000000.0
-    float interruptPeriodUs = 1000000.0 / REF_CLOCK; 
-    ddsTicker.attach_us(&update, interruptPeriodUs);
-    
-	int count = 0;
-	bool toResetCount = false;
-	Timer t;
-	t.start();
-    while (1) {
-#if (PIN_CHECK)
-		CheckPin2.write(1);
-#endif
-
+	while(1) {
 		if (!isSuppressAdc) {
 			readAdc();
 		}
-		readButtonParameters();
-		readRotEncParameters();
-		
+	}
+}
+
+void displayHandler()
+{
+	int count = 0;
+	bool toResetCount = false;
+	Timer t;
+	
+	t.start();
+	while (1) {
 		float elapseTime = t.read();
 		if (elapseTime > 10.0f) {
 			t.reset();
 			count = 0;
 		}
 		
-		ledsWrite();
-
 		if (isDisplayOff) {
 			if (toDisplayOffMessage) {
 				displayOffMessage();
@@ -737,8 +713,73 @@ int main()
 				break;
 			}
 		}
+		count++;
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+// Main function
+//
+int main()
+{
+#if (UART_TRACE)
+	pc.baud(115200);
+	pc.printf("\r\n%s\r\n", TITLE_STR1);
+	pc.printf("%s %s\r\n", TITLE_STR2, TITLE_STR3);
+	pc.printf("UINT32_MAX: %lu\r\n", UINT32_MAX);
+	pc.printf("System Clock: %lu Hz\r\n", SystemCoreClock);
+	pc.printf("CLOCKS_PER_SEC: %d\r\n", CLOCKS_PER_SEC);
+	pc.printf("RAND_MAX: %d\r\n", RAND_MAX);
+	pc.printf("INTERNAL_VOLTAGE: %f\r\n", INTERNAL_VOLTAGE);
+#endif
+
+	u8g2Initialize();
+	displayTitle();
+
+	ledsCheck();
+
+	debouncerInitialize();
+	rotEncInitialize();
+	
+	for (int i = 0; i < OSC_NUM; i++) {
+		phaccu[i] = 0;
+		tword_m[i] = pow(2.0, 32) * drate[i] / REF_CLOCK;  // calculate DDS tuning word;
+	}
+    
+    // 1.0s / 1.0us = 1000000.0
+    float interruptPeriodUs = 1000000.0 / REF_CLOCK; 
+    ddsTicker.attach_us(&update, interruptPeriodUs);
+	
+	// Threads start
+	threadReadAdc.set_priority(osPriorityHigh);
+	threadDisplay.set_priority(osPriorityLow);
+	
+	threadReadAdc.start(readAdcHandler);
+	threadDisplay.start(displayHandler);
 
 #if (UART_TRACE)
+	int count = 0;
+	Timer t;
+	t.start();
+#endif 
+
+    while (1) {
+#if (PIN_CHECK)
+		CheckPin2.write(1);
+#endif
+
+		readButtonParameters();
+		readRotEncParameters();
+
+		ledsWrite();
+
+#if (UART_TRACE)
+		float elapseTime = t.read();
+		if (elapseTime > 10.0f) {
+			t.reset();
+			count = 0;
+		}
+
 		for (int i = 0; i < OSC_NUM; i++) {
 			pc.printf("%d  %d  %3.2lf\t%1.3f\t%d\t%1.3f:\t", 
 				waveShape[i],
@@ -755,9 +796,9 @@ int main()
 		pc.printf("%5.2f V\t", powerVoltage);
 		pc.printf("SuppressADC:%d\t", isSuppressAdc);
 		pc.printf("\r\n");
-#endif
-
+		
 		count++;
+#endif
 
 #if (PIN_CHECK)
 		CheckPin2.write(0);
