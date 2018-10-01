@@ -621,9 +621,9 @@ void displayPulseWidth()
 	// Pulse Width
 	sprintf(strBuffer, "PW1: %1.3lf ", (float)pulseWidth[0] / UINT16_MAX); 
 	u8g2_DrawStr(&U8g2Handler, 0, 16, strBuffer);
-	sprintf(strBuffer, "PW2: %1.3lf ", (float)pulseWidth[0] / UINT16_MAX); 
+	sprintf(strBuffer, "PW2: %1.3lf ", (float)pulseWidth[1] / UINT16_MAX); 
 	u8g2_DrawStr(&U8g2Handler, 0, 32, strBuffer);
-	sprintf(strBuffer, "PW3: %1.3lf ", (float)pulseWidth[0] / UINT16_MAX); 
+	sprintf(strBuffer, "PW3: %1.3lf ", (float)pulseWidth[2] / UINT16_MAX); 
 	u8g2_DrawStr(&U8g2Handler, 0, 48, strBuffer);
 	
 	u8g2_SendBuffer(&U8g2Handler);
