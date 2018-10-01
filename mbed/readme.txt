@@ -19,6 +19,7 @@ Nucleo_DCO_Test17 + Rotary Encoderを増やす, LED, UART fps
 Nucleo_DCO_Test18 + Clean up, パネル取り付けプッシュスイッチ
 Nucleo_DCO_Test19 + ADC読み取り抑止
 Nucleo_DCO_Test20 + RotaryEncoder Callback（）使用, ADC読み取り、OLED表示をThreadに
+Nucleo_DCO_Test21 + OLED表示のみThread ADC読み取りをメインループに戻す
 
 ADC_VREF_Test01         ADC_VREFの読み取り
 AverageAnalogIN_Test01  AverageAnalogIn(移動平均付きAnalogIn)のテスト
