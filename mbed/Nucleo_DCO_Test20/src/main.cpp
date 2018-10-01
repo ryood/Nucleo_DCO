@@ -1,5 +1,5 @@
 /*
-   Nucleo DCO Test19
+   Nucleo DCO Test20
 
    u8g2-mbed + DDS(3OSC) + InternalADC + InterruptIn + DisplayMode + FrequencyRange
    64k wavetable
@@ -11,7 +11,7 @@
    UART Trace FPS
    Power voltage check
    
-   2018.09.22
+   2018.10.01
 
 */
 #include "mbed.h"
@@ -25,7 +25,7 @@
 
 #define PIN_CHECK   (1)
 #define UART_TRACE  (1)
-#define TITLE_STR1  ("DCO Test19")
+#define TITLE_STR1  ("DCO Test20")
 #define TITLE_STR2  (__DATE__)
 #define TITLE_STR3  (__TIME__)
 
