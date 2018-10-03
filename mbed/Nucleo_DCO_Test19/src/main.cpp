@@ -739,6 +739,7 @@ int main()
 		}
 
 #if (UART_TRACE)
+		pc.printf("%s  ", TITLE_STR1);
 		for (int i = 0; i < OSC_NUM; i++) {
 			pc.printf("%d  %d  %3.2lf\t%1.3f\t%d\t%1.3f:\t", 
 				waveShape[i],

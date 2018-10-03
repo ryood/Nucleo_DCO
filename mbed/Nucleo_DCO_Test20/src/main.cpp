@@ -723,6 +723,8 @@ void displayHandler()
 int main()
 {
 #if (UART_TRACE)
+	set_time(0);
+	
 	pc.baud(115200);
 	pc.printf("\r\n%s\r\n", TITLE_STR1);
 	pc.printf("%s %s\r\n", TITLE_STR2, TITLE_STR3);
@@ -780,6 +782,8 @@ int main()
 			count = 0;
 		}
 
+		time_t seconds = time(NULL);
+		pc.printf("%d  %s  ", seconds, TITLE_STR1);
 		for (int i = 0; i < OSC_NUM; i++) {
 			pc.printf("%d  %d  %3.2lf\t%1.3f\t%d\t%1.3f:\t", 
 				waveShape[i],
