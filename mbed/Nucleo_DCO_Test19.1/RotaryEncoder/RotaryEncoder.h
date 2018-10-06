@@ -94,7 +94,7 @@ public:
     * @param The interval in microseconds.
     */
     void setInterval(timestamp_t t) {
-        ticker.attach_us(this, &RotaryEncoder::func_ticker, t);
+        ticker.attach_us(callback(this, &RotaryEncoder::func_ticker), t);
     }
 
 private:

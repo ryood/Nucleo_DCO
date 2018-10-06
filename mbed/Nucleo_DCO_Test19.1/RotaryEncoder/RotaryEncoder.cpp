@@ -39,7 +39,7 @@ RotaryEncoder::RotaryEncoder(PinName pin1_name, PinName pin2_name, int min, int 
         : pin1(pin1_name), pin2(pin2_name), min(min), max(max), val(val) {
     pin1.mode(PullUp);
     pin2.mode(PullUp);
-    ticker.attach_us(this, &RotaryEncoder::func_ticker, 500);
+    ticker.attach_us(callback(this, &RotaryEncoder::func_ticker), 500);
 }
 
 /**
