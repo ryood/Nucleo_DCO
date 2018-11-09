@@ -83,8 +83,7 @@ void receiveEvent(int byteN)
   for (int i = 0; i < 16; i++) {
     titleStr3[i] = Wire.read();
   }
-  */
-  
+  */  
   Serial.println(String(titleStr1));
   Serial.println(String(titleStr2));
   //Serial.println(String(titleStr3));
