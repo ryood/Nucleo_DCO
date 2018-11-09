@@ -60,15 +60,20 @@ int main()
 		}
 		
 		strncpy(strBuffer, TITLE_STR1, len);
-		if (I2cArduino.write(I2C_ARDUINO_ADDR, strBuffer, len, false) != 0) {
+		if (I2cArduino.write(I2C_ARDUINO_ADDR, strBuffer, len, true) != 0) {
 			printf("%d I2C failure: TITLE_STR1\r\n", x);
 		}
-/*
+		
 		strncpy(strBuffer, TITLE_STR2, len);
-		I2cArduino.write(I2C_ARDUINO_ADDR, strBuffer, len, true);
+		if (I2cArduino.write(I2C_ARDUINO_ADDR, strBuffer, len, false) != 0) {
+			printf("%d I2C failure: TITLE_STR2\r\n", x);
+		}
+		/*
 		strncpy(strBuffer, TITLE_STR3, len);
-		I2cArduino.write(I2C_ARDUINO_ADDR, strBuffer, len, false);
-*/
+		if (I2cArduino.write(I2C_ARDUINO_ADDR, strBuffer, len, false) != 0) {
+			printf("%d I2C failure: TITLE_STR3\r\n", x);
+		}
+		*/
 /*
 	if (I2cArduino.write(I2C_ARDUINO_ADDR, "x is ", 5, true) != 0) {
             printf("I2C failure");
