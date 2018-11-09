@@ -57,6 +57,7 @@ int main()
 		const int len = 32;
 		char strBuffer[len];
 
+		// Title文字列を送信
 		strncpy(strBuffer, TITLE_STR1, len);
 		printf("%s %d %d\r\n", strBuffer, len, strlen(strBuffer));
 		uint8_t mode = DM_TITLE_STR1;
@@ -64,7 +65,7 @@ int main()
 			printf("%d I2C failure: mode\r\n", x);
 		}
 		if (I2cArduino.write(I2C_ARDUINO_ADDR, strBuffer, len, false) != 0) {
-			printf("%d I2C failure: titleData\r\n", x);
+			printf("%d I2C failure: TitleStr1\r\n", x);
 		}
 		
 		strncpy(strBuffer, TITLE_STR2, len);
@@ -74,7 +75,7 @@ int main()
 			printf("%d I2C failure: mode\r\n", x);
 		}
 		if (I2cArduino.write(I2C_ARDUINO_ADDR, strBuffer, len, false) != 0) {
-			printf("%d I2C failure: titleData\r\n", x);
+			printf("%d I2C failure: TitleStr2\r\n", x);
 		}
 
 		strncpy(strBuffer, TITLE_STR3, len);
@@ -84,19 +85,17 @@ int main()
 			printf("%d I2C failure: mode\r\n", x);
 		}
 		if (I2cArduino.write(I2C_ARDUINO_ADDR, strBuffer, len, false) != 0) {
-			printf("%d I2C failure: titleData\r\n", x);
-		}
-
-		/*
-		mode = DM_TITLE;
-		if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&mode, 1, true) != 0) {
-			printf("%d I2C failure: mode\r\n", x);
+			printf("%d I2C failure: TitleStr3\r\n", x);
 		}
 		
-		if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&titleData, sizeof(titleData), false) != 0) {
-			printf("%d I2C failure: titleData\r\n", x);
+		wait_ms(1);
+		
+		// Title表示指示を送信
+		mode = DM_TITLE;
+		if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&mode, 1, false) != 0) {
+			printf("%d I2C failure: mode: DM_TITLE\r\n", x);
 		}
-		*/
+
 		/*
 		strncpy(strBuffer, TITLE_STR2, len);
 		printf("%s %d %d\r\n", strBuffer, len, strlen(strBuffer));
@@ -119,8 +118,8 @@ int main()
         if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&x, 1) != 0) {
             printf("I2C failure");
         }
-        CheckPin1.write(0);
 */
+        CheckPin1.write(0);
         x++;
         wait_ms(500);
     }
