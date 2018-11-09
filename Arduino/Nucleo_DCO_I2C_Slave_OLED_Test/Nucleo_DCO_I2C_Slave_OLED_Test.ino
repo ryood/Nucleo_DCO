@@ -68,24 +68,26 @@ void receiveEvent(int byteN)
   Serial.print("mode: ");
   Serial.println(mode);
 
-  char titleStr1[16];
+  char titleStr1[32];
+  /*
   char titleStr2[16];
   char titleStr3[16];
-  
-  for (int i = 0; i < 16; i++) {
+  */
+  for (int i = 0; i < 32; i++) {
     titleStr1[i] = Wire.read();
   }
-  
+  /*
   for (int i = 0; i < 16; i++) {
     titleStr2[i] = Wire.read();
   }
+  */
   /*
   for (int i = 0; i < 16; i++) {
     titleStr3[i] = Wire.read();
   }
   */  
   Serial.println(String(titleStr1));
-  Serial.println(String(titleStr2));
+  //Serial.println(String(titleStr2));
   //Serial.println(String(titleStr3));
   
 /*

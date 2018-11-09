@@ -22,6 +22,9 @@ enum {
 	DM_FREQUENCY   = 2,
 	DM_AMPLITUDE   = 3,
 	DM_PULSE_WIDTH = 4,
+	DM_TITLE_STR1  = 128,
+	DM_TITLE_STR2  = 129,
+	DM_TITLE_STR3  = 130,
 	DM_DISPLAY_OFF = 255
 };
 
@@ -50,27 +53,57 @@ int main()
 #if (UART_TRACE)
 		pc.printf("displayTitle()\r\n");
 #endif
-	
-		const int len = 16;
+
+		const int len = 32;
 		char strBuffer[len];
 
-		uint8_t mode = DM_TITLE;
+		strncpy(strBuffer, TITLE_STR1, len);
+		printf("%s %d %d\r\n", strBuffer, len, strlen(strBuffer));
+		uint8_t mode = DM_TITLE_STR1;
+		if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&mode, 1, true) != 0) {
+			printf("%d I2C failure: mode\r\n", x);
+		}
+		if (I2cArduino.write(I2C_ARDUINO_ADDR, strBuffer, len, false) != 0) {
+			printf("%d I2C failure: titleData\r\n", x);
+		}
+		
+		strncpy(strBuffer, TITLE_STR2, len);
+		printf("%s %d %d\r\n", strBuffer, len, strlen(strBuffer));
+		mode = DM_TITLE_STR2;
+		if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&mode, 1, true) != 0) {
+			printf("%d I2C failure: mode\r\n", x);
+		}
+		if (I2cArduino.write(I2C_ARDUINO_ADDR, strBuffer, len, false) != 0) {
+			printf("%d I2C failure: titleData\r\n", x);
+		}
+
+		strncpy(strBuffer, TITLE_STR3, len);
+		printf("%s %d %d\r\n", strBuffer, len, strlen(strBuffer));
+		mode = DM_TITLE_STR3;
+		if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&mode, 1, true) != 0) {
+			printf("%d I2C failure: mode\r\n", x);
+		}
+		if (I2cArduino.write(I2C_ARDUINO_ADDR, strBuffer, len, false) != 0) {
+			printf("%d I2C failure: titleData\r\n", x);
+		}
+
+		/*
+		mode = DM_TITLE;
 		if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&mode, 1, true) != 0) {
 			printf("%d I2C failure: mode\r\n", x);
 		}
 		
-		strncpy(strBuffer, TITLE_STR1, len);
-		printf("%s %d %d\r\n", strBuffer, len, strlen(strBuffer));
-		if (I2cArduino.write(I2C_ARDUINO_ADDR, strBuffer, len, true) != 0) {
-			printf("%d I2C failure: TITLE_STR1\r\n", x);
+		if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&titleData, sizeof(titleData), false) != 0) {
+			printf("%d I2C failure: titleData\r\n", x);
 		}
-		
+		*/
+		/*
 		strncpy(strBuffer, TITLE_STR2, len);
 		printf("%s %d %d\r\n", strBuffer, len, strlen(strBuffer));
 		if (I2cArduino.write(I2C_ARDUINO_ADDR, strBuffer, len, false) != 0) {
 			printf("%d I2C failure: TITLE_STR2\r\n", x);
 		}
-		
+		*/
 /*
 		strncpy(strBuffer, TITLE_STR3, len);
 		printf("%s %d %d\r\n", strBuffer, len, strlen(strBuffer));
