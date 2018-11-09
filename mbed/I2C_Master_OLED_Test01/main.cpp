@@ -44,7 +44,7 @@ int main()
 
     I2cArduino.frequency(I2C_CLOCK);
     
-    uint8_t x = 0;
+    int x = 0;
     while(1) {
         CheckPin1.write(1);
 #if (UART_TRACE)
@@ -55,12 +55,15 @@ int main()
 		char strBuffer[len];
 
 		uint8_t mode = DM_TITLE;
-		if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&mode, 1, false) != 0) {
-			printf("I2C failure");
+		if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&mode, 1, true) != 0) {
+			printf("%d I2C failure: mode\r\n", x);
+		}
+		
+		strncpy(strBuffer, TITLE_STR1, len);
+		if (I2cArduino.write(I2C_ARDUINO_ADDR, strBuffer, len, false) != 0) {
+			printf("%d I2C failure: TITLE_STR1\r\n", x);
 		}
 /*
-		strncpy(strBuffer, TITLE_STR1, len);
-		I2cArduino.write(I2C_ARDUINO_ADDR, strBuffer, len, true);
 		strncpy(strBuffer, TITLE_STR2, len);
 		I2cArduino.write(I2C_ARDUINO_ADDR, strBuffer, len, true);
 		strncpy(strBuffer, TITLE_STR3, len);
@@ -76,6 +79,6 @@ int main()
         CheckPin1.write(0);
 */
         x++;
-        wait_ms(1);
+        wait_ms(500);
     }
 }
