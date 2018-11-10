@@ -31,6 +31,8 @@ enum {
 //U8G2_SSD1306_128X32_UNIVISION_1_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);  // Adafruit ESP8266/32u4/ARM Boards + FeatherWing OLED
 U8G2_SSD1306_128X64_NONAME_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 
+const int CheckPin1 = 2;
+
 char masterTitleStr1[MASTER_TITLE_STR_LEN] = "TitleStr1";
 char masterTitleStr2[MASTER_TITLE_STR_LEN] = "TitleStr2";
 char masterTitleStr3[MASTER_TITLE_STR_LEN] = "TitleStr3";
@@ -41,6 +43,8 @@ void setup()
   Serial.println();
   Serial.println(TITLE_STR1);
   Serial.println(TITLE_STR2);
+
+  pinMode(CheckPin1, OUTPUT);
   
   // OLED
   u8g2.begin();
@@ -76,13 +80,15 @@ void receiveEvent(int byteN)
   Serial.print("mode: ");
   Serial.println(mode);
 
+  digitalWrite(CheckPin1, HIGH);
+  
   switch (mode) {
   case DM_TITLE:
     Serial.println("******* Display Title *********");
     Serial.println(masterTitleStr1);
     Serial.println(masterTitleStr2);
     Serial.println(masterTitleStr3);
-    Serial.println("******************************");
+    Serial.println("*******************************");
     break;
   case DM_TITLE_STR1:
     for (int i = 0; i < MASTER_TITLE_STR_LEN; i++) {
@@ -99,36 +105,27 @@ void receiveEvent(int byteN)
       masterTitleStr3[i] = Wire.read();
     }
     break;
-  }
   /*
-  Serial.println(masterTitleStr1);
-  Serial.println(masterTitleStr2);
-  Serial.println(masterTitleStr3);
+  case DM_NORMAL:
+    displayNormal();
+    break;
+  case DM_FREQUENCY:
+    displayFrequency();
+    break;
+  case DM_AMPLITUDE:
+    displayAmplitude();
+    break;
+  case DM_PULSE_WIDTH:
+    displayPulseWidth();
+    break;
+  case DM_DISPLAY_OFF:
+    displayOff();
+    break;
   */
-/*
-    CheckPin1.write(1);
-    switch (displayMode) {
-    case DM_TITLE:
-      displayTitle();
-      break;
-    case DM_NORMAL:
-      displayNormal();
-      break;
-    case DM_FREQUENCY:
-      displayFrequency();
-      break;
-    case DM_AMPLITUDE:
-      displayAmplitude();
-      break;
-    case DM_PULSE_WIDTH:
-      displayPulseWidth();
-      break;
-    case DM_DISPLAY_OFF:
-      displayOff();
-      break;
-    }
-    CheckPin1.write(0);
-*/
+  }
+  
+  digitalWrite(CheckPin1, LOW);
+  
 /*  
   char buff1[20];
   char buff2[30];
