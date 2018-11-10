@@ -9,11 +9,13 @@
 #include <U8g2lib.h>
 
 #define TITLE_STR1  ("I2C Slave Test")
-#define TITLE_STR2  ("20181109")
+#define TITLE_STR2  ("20181111")
 
 #define I2C_ADDR   (0x08)
 #define I2C_CLOCK  (100000)
+
 #define MASTER_TITLE_STR_LEN (32)
+#define OSC_NUM    (3)
 
 // display mode
 enum {
@@ -36,6 +38,17 @@ const int CheckPin1 = 2;
 char masterTitleStr1[MASTER_TITLE_STR_LEN] = "TitleStr1";
 char masterTitleStr2[MASTER_TITLE_STR_LEN] = "TitleStr2";
 char masterTitleStr3[MASTER_TITLE_STR_LEN] = "TitleStr3";
+
+volatile int displayMode = DM_TITLE;
+
+volatile int waveShape[OSC_NUM];
+volatile int frequencyRange[OSC_NUM];
+volatile int fps;
+volatile int batteryVoltage;
+volatile bool adcAvailable;
+
+volatile uint8_t fpsh;
+volatile uint8_t fpsl;
 
 void setup()
 {
@@ -69,6 +82,31 @@ void setup()
 
 void loop()
 {
+  switch (displayMode) {
+  case DM_TITLE:
+    Serial.println("******* Display Title *********");
+    Serial.println(masterTitleStr1);
+    Serial.println(masterTitleStr2);
+    Serial.println(masterTitleStr3);
+    Serial.println("*******************************");
+    break;
+  case DM_NORMAL:
+    Serial.println("*********** Normal ************");
+    Serial.print("WaveShpe1: ");   Serial.println(waveShape[0]);
+    Serial.print("WaveShpe2: ");   Serial.println(waveShape[1]);
+    Serial.print("WaveShpe3: ");   Serial.println(waveShape[2]);
+    Serial.print("FreqRange1: ");  Serial.println(frequencyRange[0]);
+    Serial.print("FreqRange2: ");  Serial.println(frequencyRange[1]);
+    Serial.print("FreqRange3: ");  Serial.println(frequencyRange[2]);
+    Serial.print("Fps(H): ");      Serial.println(fpsh); 
+    Serial.print("Fps(L): ");      Serial.println(fpsl); 
+    Serial.print("Fps: ");         Serial.println(fps);
+    Serial.print("Fps: ");         Serial.print(fps/10); Serial.print("."); Serial.println(fps%10); 
+    Serial.print("BattVoltage: "); Serial.println(batteryVoltage);
+    Serial.print("BattVoltage: "); Serial.print(batteryVoltage/10); Serial.print("."); Serial.println(batteryVoltage%10);
+    Serial.print("ADCAvilable: "); Serial.println(adcAvailable);
+    Serial.println("*******************************");
+  }
   delay(100);
 }
 
@@ -76,19 +114,14 @@ void receiveEvent(int byteN)
 {
   Serial.println("receiveEvent()");
   
-  int mode = Wire.read();
-  Serial.print("mode: ");
-  Serial.println(mode);
+  displayMode = Wire.read();
+  Serial.print("displayMode: ");
+  Serial.println(displayMode);
 
   digitalWrite(CheckPin1, HIGH);
   
-  switch (mode) {
+  switch (displayMode) {
   case DM_TITLE:
-    Serial.println("******* Display Title *********");
-    Serial.println(masterTitleStr1);
-    Serial.println(masterTitleStr2);
-    Serial.println(masterTitleStr3);
-    Serial.println("*******************************");
     break;
   case DM_TITLE_STR1:
     for (int i = 0; i < MASTER_TITLE_STR_LEN; i++) {
@@ -105,10 +138,21 @@ void receiveEvent(int byteN)
       masterTitleStr3[i] = Wire.read();
     }
     break;
-  /*
   case DM_NORMAL:
-    displayNormal();
+    for (int i = 0; i < OSC_NUM; i++) {
+      waveShape[i] = Wire.read();
+    }
+    for (int i = 0; i < OSC_NUM; i++) {
+      frequencyRange[i] = Wire.read();
+    }
+    //fps = ((uint16_t)Wire.read() << 1) | Wire.read();
+    fpsl = Wire.read();
+    fpsh = Wire.read();
+    fps = ((uint16_t)fpsh << 8) | fpsl;
+    batteryVoltage = Wire.read();
+    adcAvailable = Wire.read();
     break;
+  /*
   case DM_FREQUENCY:
     displayFrequency();
     break;
