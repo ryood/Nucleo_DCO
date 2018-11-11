@@ -16,7 +16,7 @@
 #define TITLE_STR2  (__DATE__)
 #define TITLE_STR3  (__TIME__)
 
-int displayMode = DM_DISPLAY_OFF;
+int displayMode = DM_NORMAL;
 
 I2C I2cArduino(PB_9, PB_8);  // SDA, SCL
 DigitalOut CheckPin1(PA_10);
