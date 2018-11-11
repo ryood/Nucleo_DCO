@@ -16,10 +16,15 @@
 #define TITLE_STR2  (__DATE__)
 #define TITLE_STR3  (__TIME__)
 
-int displayMode = DM_NORMAL;
+#define DEBOUNCE_DELAY       (20000)  // usec
+
+int displayMode = DM_TITLE;
 
 I2C I2cArduino(PB_9, PB_8);  // SDA, SCL
+InterruptIn UserButton(PC_13);
 DigitalOut CheckPin1(PA_10);
+
+Timeout debouncer;
 
 #if (UART_TRACE)
 Serial pc(USBTX, USBRX);
@@ -238,6 +243,24 @@ void displayOff()
 	}
 }
 
+void changeDisplayMode()
+{
+	if (UserButton.read() == 0) {
+		displayMode++;
+		if (displayMode > DM_DISPLAY_OFF) {
+			displayMode = 0;
+		}
+		else if (displayMode > DM_PULSE_WIDTH) {
+			displayMode = DM_DISPLAY_OFF;
+		}
+	}
+}
+
+void debounce() 
+{
+	debouncer.attach_us(&changeDisplayMode, DEBOUNCE_DELAY); 
+}
+
 int main()
 {
 #if (UART_TRACE)
@@ -249,6 +272,7 @@ int main()
 #endif
 
     I2cArduino.frequency(I2C_CLOCK);
+	UserButton.fall(&debounce);
 	
 	// initialize parameter (dummy)
 	waveShape[0] = 1;
