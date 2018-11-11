@@ -1,7 +1,8 @@
 /*
  * Nucleo DCO I2C Slave / OLED Module Test.
- *
- * 2018.11.07
+ * use u8g2::print()
+ * 
+ * 2018.11.11
  *
  */
 
@@ -9,7 +10,7 @@
 #include <U8g2lib.h>
 #include "DataComFormat.h"
 
-#define UART_TRACE  (1)
+#define UART_TRACE  (0)
 
 #define TITLE_STR1  ("I2C Slave Test")
 #define TITLE_STR2  ("20181111")
@@ -60,6 +61,8 @@ volatile struct amplitudeData amplitudeData;
 volatile struct pulseWidthData pulseWidthData;
 volatile bool displayOffMessage;
 
+volatile bool isDirty = true;
+
 void setup()
 {
 #if (UART_TRACE)  
@@ -76,8 +79,10 @@ void setup()
   u8g2.firstPage();
   u8g2.setFont(u8g2_font_8x13_tf);
   do {
-    u8g2.drawStr(0,10,TITLE_STR1);
-    u8g2.drawStr(0,25,TITLE_STR2);
+    u8g2.setCursor(0, 10);
+    u8g2.print(TITLE_STR1);
+    u8g2.setCursor(0, 25);
+    u8g2.print(TITLE_STR2);
   } while (u8g2.nextPage());
   
   // I2C
@@ -93,30 +98,6 @@ void setup()
 //-------------------------------------------------------------------------------------------------
 // OLED Display
 //
-
-// n倍数の整数部を求める
-// param
-//     n: 変換する整数
-// 　　d: 小数点以下桁数
-int getIntg(int n, int d)
-{
-  int ret = n / d;
-  return ret;
-}
-
-// n倍数の少数部を求める
-// param
-//     n: 変換する整数
-// 　　d: 小数点以下桁数
-int getDeci(int n, int d)
-{
-  int ret = n % d;
-  if (ret < 0) {
-    ret = - ret;
-  }
-  return ret;
-}
-
 void displayTitle()
 {
 #if (UART_TRACE)
@@ -126,9 +107,12 @@ void displayTitle()
   u8g2.firstPage();
   u8g2.setFont(u8g2_font_10x20_mf);
   do {
-    u8g2.drawStr(0, 16, masterTitleStr1);
-    u8g2.drawStr(0, 32, masterTitleStr2);
-    u8g2.drawStr(0, 48, masterTitleStr3);
+    u8g2.setCursor(0, 16);
+    u8g2.print(masterTitleStr1);
+    u8g2.setCursor(0, 32);
+    u8g2.print(masterTitleStr2);
+    u8g2.setCursor(0, 48);
+    u8g2.print(masterTitleStr3);
   } while (u8g2.nextPage());
 }
 
@@ -137,35 +121,33 @@ void displayNormal()
  #if (UART_TRACE)
   Serial.println("displayNormal()");
 #endif
-
-  char strBuffer[20];
   
   u8g2.firstPage();
   u8g2.setFont(u8g2_font_10x20_mf);
   do {
-    sprintf(strBuffer, "%s %s %s", 
-      waveShapeName[normalData.waveShape[0]],
-      waveShapeName[normalData.waveShape[1]],
-      waveShapeName[normalData.waveShape[2]]
-    );
-    u8g2.drawStr(4, 16, strBuffer);
+    u8g2.setCursor(4, 16);
+    u8g2.print(waveShapeName[normalData.waveShape[0]]);
+    u8g2.print(' ');
+    u8g2.print(waveShapeName[normalData.waveShape[1]]);
+    u8g2.print(' ');
+    u8g2.print(waveShapeName[normalData.waveShape[2]]);
 
-    sprintf(strBuffer, "%s %s %s", 
-      frequencyRangeName[normalData.frequencyRange[0]],
-      frequencyRangeName[normalData.frequencyRange[1]],
-      frequencyRangeName[normalData.frequencyRange[2]]
-    );
-    u8g2.drawStr(4, 32, strBuffer);
+    u8g2.setCursor(4, 32);
+    u8g2.print(frequencyRangeName[normalData.frequencyRange[0]]);
+    u8g2.print(' ');
+    u8g2.print(frequencyRangeName[normalData.frequencyRange[1]]);
+    u8g2.print(' ');
+    u8g2.print(frequencyRangeName[normalData.frequencyRange[2]]);
 
-    int fps_intg = getIntg(normalData.fps, 10);
-    int fps_deci = getDeci(normalData.fps, 10);
-    sprintf(strBuffer, "FPS:%d.%d", fps_intg, fps_deci);
-    u8g2.drawStr(4, 48, strBuffer);
+    u8g2.setCursor(4, 48);
+    u8g2.print("FPS:");
+    u8g2.print((float)normalData.fps/10, 1);
 
-    int bat_intg = getIntg(normalData.batteryVoltage, 10);
-    int bat_deci = getDeci(normalData.batteryVoltage, 10);
-    sprintf(strBuffer, "BAT:%d.%dV %s", bat_intg, bat_deci, normalData.adcAvailable ? "xx" : "AD");
-    u8g2.drawStr(4, 64, strBuffer);
+    u8g2.setCursor(4, 64);
+    u8g2.print("BAT:");
+    u8g2.print((float)normalData.batteryVoltage/10, 1);
+    u8g2.print("V ");
+    u8g2.print(normalData.adcAvailable ? "xx" : "AD");    
   } while (u8g2.nextPage()); 
 }
 
@@ -175,24 +157,28 @@ void displayFrequency()
   Serial.println("displayFrequency()");
 #endif
 
-  char strBuffer[20];
-  
   u8g2.firstPage();
   u8g2.setFont(u8g2_font_10x20_mf);
   do {
-    sprintf(strBuffer, "F1:%d.%d Hz", getIntg(frequencyData.rate[0], 10), getDeci(frequencyData.rate[0], 10)); 
-    u8g2.drawStr(0, 16, strBuffer);
-    sprintf(strBuffer, "F2:%d.%d Hz", getIntg(frequencyData.rate[1], 10), getDeci(frequencyData.rate[1], 10)); 
-    u8g2.drawStr(0, 32, strBuffer);
-    sprintf(strBuffer, "F3:%d.%d Hz", getIntg(frequencyData.rate[2], 10), getDeci(frequencyData.rate[2], 10)); 
-    u8g2.drawStr(0, 48, strBuffer);
+    u8g2.setCursor(0, 16);
+    u8g2.print("F1:");
+    u8g2.print((float)frequencyData.rate[0]/10, 1);
+    u8g2.print(" Hz");
+
+    u8g2.setCursor(0, 32);
+    u8g2.print("F2:");
+    u8g2.print((float)frequencyData.rate[1]/10, 1);
+    u8g2.print(" Hz");
     
-    // Detune
-    sprintf(strBuffer, "%d.%d %d.%d", 
-      getIntg(frequencyData.detune[1], 1000), getDeci(frequencyData.detune[1], 1000),
-      getIntg(frequencyData.detune[2], 1000), getDeci(frequencyData.detune[2], 1000)
-    );
-    u8g2.drawStr(0, 64, strBuffer);
+    u8g2.setCursor(0, 48);
+    u8g2.print("F3:");
+    u8g2.print((float)frequencyData.rate[2]/10, 1);
+    u8g2.print(" Hz");
+
+    u8g2.setCursor(0, 64);
+    u8g2.print((float)frequencyData.detune[1]/1000, 3);
+    u8g2.print(' ');
+    u8g2.print((float)frequencyData.detune[2]/1000, 3);
   } while (u8g2.nextPage()); 
 }
 
@@ -202,19 +188,21 @@ void displayAmplitude()
   Serial.println("displayAmplitude()");
 #endif
 
-  char strBuffer[20];
-  
   u8g2.firstPage();
   u8g2.setFont(u8g2_font_10x20_mf);
   do {
-    sprintf(strBuffer, "AMP1: %d.%d ", getIntg(amplitudeData.amplitude[0], 1000), getDeci(amplitudeData.amplitude[0], 1000));
-    u8g2.drawStr(0, 16, strBuffer);
-    sprintf(strBuffer, "AMP2: %d.%d ", getIntg(amplitudeData.amplitude[1], 1000), getDeci(amplitudeData.amplitude[1], 1000));
-    u8g2.drawStr(0, 32, strBuffer);
-    sprintf(strBuffer, "AMP3: %d.%d ", getIntg(amplitudeData.amplitude[2], 1000), getDeci(amplitudeData.amplitude[2], 1000));
-    u8g2.drawStr(0, 48, strBuffer);
-    sprintf(strBuffer, "MAMP: %d.%d ", getIntg(amplitudeData.masterAmplitude, 1000), getDeci(amplitudeData.masterAmplitude, 1000));
-    u8g2.drawStr(0, 64, strBuffer);    
+    u8g2.setCursor(0, 16);
+    u8g2.print("AMP1: ");
+    u8g2.print((float)amplitudeData.amplitude[0]/1000, 3);
+    u8g2.setCursor(0, 32);
+    u8g2.print("AMP2: ");
+    u8g2.print((float)amplitudeData.amplitude[1]/1000, 3);
+    u8g2.setCursor(0, 48);
+    u8g2.print("AMP3: ");
+    u8g2.print((float)amplitudeData.amplitude[2]/1000, 3);
+    u8g2.setCursor(0, 64);
+    u8g2.print("MAMP: ");
+    u8g2.print((float)amplitudeData.masterAmplitude/1000, 3);
   } while (u8g2.nextPage());   
 }
 
@@ -224,17 +212,18 @@ void displayPulseWidth()
   Serial.println("displayPulseWidth()");
 #endif
 
-  char strBuffer[20];
-  
   u8g2.firstPage();
   u8g2.setFont(u8g2_font_10x20_mf);
   do {
-    sprintf(strBuffer, "PW1: %d.%d ", getIntg(pulseWidthData.pulseWidth[0], 1000), getDeci(pulseWidthData.pulseWidth[0], 1000));
-    u8g2.drawStr(0, 16, strBuffer);
-    sprintf(strBuffer, "PW2: %d.%d ", getIntg(pulseWidthData.pulseWidth[1], 1000), getDeci(pulseWidthData.pulseWidth[1], 1000));
-    u8g2.drawStr(0, 32, strBuffer);
-    sprintf(strBuffer, "PW3: %d.%d ", getIntg(pulseWidthData.pulseWidth[2], 1000), getDeci(pulseWidthData.pulseWidth[2], 1000));
-    u8g2.drawStr(0, 48, strBuffer);
+    u8g2.setCursor(0, 16);
+    u8g2.print("PW1: ");
+    u8g2.print((float)pulseWidthData.pulseWidth[0]/1000, 3);
+    u8g2.setCursor(0, 32);
+    u8g2.print("PW2: ");
+    u8g2.print((float)pulseWidthData.pulseWidth[1]/1000, 3);
+    u8g2.setCursor(0, 48);
+    u8g2.print("PW3: ");
+    u8g2.print((float)pulseWidthData.pulseWidth[2]/1000, 3);
   } while (u8g2.nextPage());   
 }
 
@@ -244,13 +233,11 @@ void displayOff()
   Serial.println("displayOff()");
 #endif
 
-  char strBuffer[20];
-  
   u8g2.firstPage();
   u8g2.setFont(u8g2_font_10x20_mf);
   do {
-    sprintf(strBuffer, "DISPLAY OFF"); 
-    u8g2.drawStr(4, 24, strBuffer);  
+    u8g2.setCursor(4, 24);
+    u8g2.print("DISPLAY OFF");
   } while (u8g2.nextPage()); 
 }
 
@@ -259,27 +246,31 @@ void displayOff()
 //
 void loop()
 {
-  switch (displayMode) {
-  case DM_TITLE:
-    displayTitle();
-    break;
-  case DM_NORMAL:
-    displayNormal();
-    break;
-  case DM_FREQUENCY:
-    displayFrequency();
-    break;
-  case DM_AMPLITUDE:
-    displayAmplitude();
-    break;
-  case DM_PULSE_WIDTH:
-    displayPulseWidth();
-    break;
-  case DM_DISPLAY_OFF:
-    displayOff();
-    break;
+  if (isDirty) {
+    isDirty = false;
+   
+    switch (displayMode) {
+    case DM_TITLE:
+      displayTitle();
+      break;
+    case DM_NORMAL:
+      displayNormal();
+      break;
+    case DM_FREQUENCY:
+      displayFrequency();
+      break;
+    case DM_AMPLITUDE:
+      displayAmplitude();
+      break;
+    case DM_PULSE_WIDTH:
+      displayPulseWidth();
+      break;
+    case DM_DISPLAY_OFF:
+      displayOff();
+      break;
+    }
   }
-  
+    
 #if (UART_TRACE)  
   switch (displayMode) {
   case DM_TITLE:
@@ -417,32 +408,9 @@ void receiveEvent(int byteN)
     displayOffMessage = Wire.read();
     break;
   }
+
+  isDirty = true;
   
   digitalWrite(CheckPin1, LOW);
-  
-/*  
-  char buff1[20];
-  char buff2[30];
-  int i = 0;
-  
-  while (1 < Wire.available()) {
-    char c = Wire.read();
-    Serial.print(c);
-    if (i < 18) {
-      buff1[i] = c;
-      i++;
-    }
-    buff1[i] = '\0';
-  }
-  int x = Wire.read();
-  Serial.println(x);
-  sprintf(buff2, "%s%d", buff1, x);
-  
-  u8g2.firstPage();
-  u8g2.setFont(u8g2_font_10x20_mf);
-  do {
-    u8g2.drawStr(0,32, buff2);
-  } while (u8g2.nextPage());
-*/
 }
 
