@@ -7,6 +7,7 @@
 
 #include <Wire.h>
 #include <U8g2lib.h>
+#include "DataComFormat.h"
 
 #define TITLE_STR1  ("I2C Slave Test")
 #define TITLE_STR2  ("20181111")
@@ -15,20 +16,6 @@
 #define I2C_CLOCK  (100000)
 
 #define MASTER_TITLE_STR_LEN (32)
-#define OSC_NUM    (3)
-
-// display mode
-enum {
-  DM_TITLE       = 0,
-  DM_NORMAL      = 1,
-  DM_FREQUENCY   = 2,
-  DM_AMPLITUDE   = 3,
-  DM_PULSE_WIDTH = 4,
-  DM_TITLE_STR1  = 128,
-  DM_TITLE_STR2  = 129,
-  DM_TITLE_STR3  = 130,
-  DM_DISPLAY_OFF = 255
-};
 
 //U8G2_SSD1306_128X32_UNIVISION_1_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);  // Adafruit ESP8266/32u4/ARM Boards + FeatherWing OLED
 U8G2_SSD1306_128X64_NONAME_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
@@ -41,14 +28,11 @@ char masterTitleStr3[MASTER_TITLE_STR_LEN] = "TitleStr3";
 
 volatile int displayMode = DM_TITLE;
 
-volatile int waveShape[OSC_NUM];
-volatile int frequencyRange[OSC_NUM];
-volatile int fps;
-volatile int batteryVoltage;
-volatile bool adcAvailable;
-
-volatile uint8_t fpsh;
-volatile uint8_t fpsl;
+volatile struct normalData normalData;
+volatile struct frequencyData frequencyData;
+volatile struct amplitudeData amplitudeData;
+volatile struct pulseWidthData pulseWidthData;
+volatile bool displayOffMessage;
 
 void setup()
 {
@@ -92,19 +76,62 @@ void loop()
     break;
   case DM_NORMAL:
     Serial.println("*********** Normal ************");
-    Serial.print("WaveShpe1: ");   Serial.println(waveShape[0]);
-    Serial.print("WaveShpe2: ");   Serial.println(waveShape[1]);
-    Serial.print("WaveShpe3: ");   Serial.println(waveShape[2]);
-    Serial.print("FreqRange1: ");  Serial.println(frequencyRange[0]);
-    Serial.print("FreqRange2: ");  Serial.println(frequencyRange[1]);
-    Serial.print("FreqRange3: ");  Serial.println(frequencyRange[2]);
-    Serial.print("Fps(H): ");      Serial.println(fpsh); 
-    Serial.print("Fps(L): ");      Serial.println(fpsl); 
-    Serial.print("Fps: ");         Serial.println(fps);
-    Serial.print("Fps: ");         Serial.print(fps/10); Serial.print("."); Serial.println(fps%10); 
-    Serial.print("BattVoltage: "); Serial.println(batteryVoltage);
-    Serial.print("BattVoltage: "); Serial.print(batteryVoltage/10); Serial.print("."); Serial.println(batteryVoltage%10);
-    Serial.print("ADCAvilable: "); Serial.println(adcAvailable);
+    Serial.print("WaveShpe1: ");   Serial.println(normalData.waveShape[0]);
+    Serial.print("WaveShpe2: ");   Serial.println(normalData.waveShape[1]);
+    Serial.print("WaveShpe3: ");   Serial.println(normalData.waveShape[2]);
+    Serial.print("FreqRange1: ");  Serial.println(normalData.frequencyRange[0]);
+    Serial.print("FreqRange2: ");  Serial.println(normalData.frequencyRange[1]);
+    Serial.print("FreqRange3: ");  Serial.println(normalData.frequencyRange[2]);
+    Serial.print("Fps: ");         Serial.println(normalData.fps);
+    Serial.print("Fps: ");         Serial.print(normalData.fps/10); Serial.print("."); Serial.println(normalData.fps%10); 
+    Serial.print("BattVoltage: "); Serial.println(normalData.batteryVoltage);
+    Serial.print("BattVoltage: "); Serial.print(normalData.batteryVoltage/10); Serial.print("."); Serial.println(normalData.batteryVoltage%10);
+    Serial.print("ADCAvilable: "); Serial.println(normalData.adcAvailable);
+    Serial.println("*******************************");
+    break;
+  case DM_FREQUENCY:
+    Serial.println("********** Frequency **********");
+    Serial.print("Rate1: ");   Serial.println(frequencyData.rate[0]);
+    Serial.print("Rate1: ");   Serial.print(frequencyData.rate[0]/10); Serial.print("."); Serial.println(frequencyData.rate[0]%10);
+    Serial.print("Rate2: ");   Serial.println(frequencyData.rate[1]);
+    Serial.print("Rate2: ");   Serial.print(frequencyData.rate[1]/10); Serial.print("."); Serial.println(frequencyData.rate[1]%10);
+    Serial.print("Rate3: ");   Serial.println(frequencyData.rate[2]);
+    Serial.print("Rate3: ");   Serial.print(frequencyData.rate[2]/10); Serial.print("."); Serial.println(frequencyData.rate[2]%10);
+    Serial.print("Detune1: "); Serial.println(frequencyData.detune[0]);
+    Serial.print("Detune1: "); Serial.print(frequencyData.detune[0]/1000); Serial.print("."); Serial.println(frequencyData.detune[0]%1000);
+    Serial.print("Detune2: "); Serial.println(frequencyData.detune[1]);
+    //Serial.print("Detune2: "); Serial.print(frequencyData.detune[1]/1000); Serial.print("."); Serial.println(frequencyData.detune[1]%1000);
+    Serial.print("Detune2: "); Serial.println((float)(frequencyData.detune[1])/1000.0f, 3);
+    Serial.print("Detune3: "); Serial.println(frequencyData.detune[2]);
+    Serial.print("Detune3: "); Serial.print(frequencyData.detune[2]/1000); Serial.print("."); Serial.println(frequencyData.detune[2]%1000);
+    Serial.println("*******************************");
+    break;
+  case DM_AMPLITUDE:
+    Serial.println("********** Amplitude **********");
+    Serial.print("Amplitude1: ");      Serial.println(amplitudeData.amplitude[0]);
+    Serial.print("Amplitude1: ");      Serial.println((float)(amplitudeData.amplitude[0])/1000.0f, 3);
+    Serial.print("Amplitude2: ");      Serial.println(amplitudeData.amplitude[1]);
+    Serial.print("Amplitude2: ");      Serial.println((float)(amplitudeData.amplitude[1])/1000.0f, 3);
+    Serial.print("Amplitude3: ");      Serial.println(amplitudeData.amplitude[2]);
+    Serial.print("Amplitude3: ");      Serial.println((float)(amplitudeData.amplitude[2])/1000.0f, 3);
+    Serial.print("MasterAmplitude: "); Serial.println(amplitudeData.masterAmplitude);
+    Serial.print("MasterAmplitude: "); Serial.println((float)(amplitudeData.masterAmplitude)/1000.0f, 3);
+    Serial.print("Clip: ");            Serial.println(amplitudeData.clip); 
+    Serial.println("*******************************");
+    break;
+  case DM_PULSE_WIDTH:
+    Serial.println("********* Pulse Width *********");
+    Serial.print("PulseWidth1: ");     Serial.println(pulseWidthData.pulseWidth[0]);
+    Serial.print("PulseWidth1: ");     Serial.println((float)(pulseWidthData.pulseWidth[0])/1000.0f, 3);
+    Serial.print("PulseWidth2: ");     Serial.println(pulseWidthData.pulseWidth[1]);
+    Serial.print("PulseWidth2: ");     Serial.println((float)(pulseWidthData.pulseWidth[1])/1000.0f, 3);
+    Serial.print("PulseWidth3: ");     Serial.println(pulseWidthData.pulseWidth[2]);
+    Serial.print("PulseWidth3: ");     Serial.println((float)(pulseWidthData.pulseWidth[2])/1000.0f, 3);
+    Serial.println("*******************************");
+    break;
+  case DM_DISPLAY_OFF:
+    Serial.println("********* Display Off *********");
+    Serial.print("DisplayOffMessage: "); Serial.println(displayOffMessage);
     Serial.println("*******************************");
   }
   delay(100);
@@ -119,7 +146,8 @@ void receiveEvent(int byteN)
   Serial.println(displayMode);
 
   digitalWrite(CheckPin1, HIGH);
-  
+
+  uint8_t* p;
   switch (displayMode) {
   case DM_TITLE:
     break;
@@ -139,33 +167,31 @@ void receiveEvent(int byteN)
     }
     break;
   case DM_NORMAL:
-    for (int i = 0; i < OSC_NUM; i++) {
-      waveShape[i] = Wire.read();
+    p = (uint8_t *)&normalData;
+    for (int i = 0; i < sizeof(struct normalData); i++) {
+      p[i] = Wire.read();
     }
-    for (int i = 0; i < OSC_NUM; i++) {
-      frequencyRange[i] = Wire.read();
-    }
-    //fps = ((uint16_t)Wire.read() << 1) | Wire.read();
-    fpsl = Wire.read();
-    fpsh = Wire.read();
-    fps = ((uint16_t)fpsh << 8) | fpsl;
-    batteryVoltage = Wire.read();
-    adcAvailable = Wire.read();
-    break;
-  /*
   case DM_FREQUENCY:
-    displayFrequency();
+    p = (uint8_t *)&frequencyData;
+    for (int i = 0; i < sizeof(struct frequencyData); i++) {
+      p[i] = Wire.read();
+    }
     break;
   case DM_AMPLITUDE:
-    displayAmplitude();
+    p = (uint8_t *)&amplitudeData;
+    for (int i = 0; i < sizeof(struct amplitudeData); i++) {
+      p[i] = Wire.read();
+    }
     break;
   case DM_PULSE_WIDTH:
-    displayPulseWidth();
+    p = (uint8_t *)&pulseWidthData;
+    for (int i = 0; i < sizeof(struct pulseWidthData); i++) {
+      p[i] = Wire.read();
+    }
     break;
   case DM_DISPLAY_OFF:
-    displayOff();
+    displayOffMessage = Wire.read();
     break;
-  */
   }
   
   digitalWrite(CheckPin1, LOW);
