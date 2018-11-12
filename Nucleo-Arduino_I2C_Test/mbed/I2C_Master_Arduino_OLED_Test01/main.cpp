@@ -8,15 +8,15 @@
 #include "mbed.h"
 #include "DataComFormat.h"
 
-#define UART_TRACE  (1)
+#define UART_TRACE  (0)
 
-#define I2C_CLOCK (100000)
+#define I2C_CLOCK (400000)
 #define I2C_ARDUINO_ADDR   (0x08 << 1)  // 8bit address
 #define TITLE_STR1  ("I2C OLED Test")
 #define TITLE_STR2  (__DATE__)
 #define TITLE_STR3  (__TIME__)
 
-#define DEBOUNCE_DELAY       (20000)  // usec
+#define DEBOUNCE_DELAY       (50000)  // usec
 
 int displayMode = DM_TITLE;
 
@@ -46,8 +46,13 @@ volatile bool isClip;
 
 volatile int pulseWidth[OSC_NUM];
 
+volatile bool isDirty = true;
+
 int x = 0;
 
+//-------------------------------------------------------------------------------------------------
+// I2C 通信
+//
 void displayTitle()
 {
 #if (UART_TRACE)
@@ -243,6 +248,9 @@ void displayOff()
 	}
 }
 
+//-------------------------------------------------------------------------------------------------
+// 入力処理
+//
 void changeDisplayMode()
 {
 	if (UserButton.read() == 0) {
@@ -253,6 +261,7 @@ void changeDisplayMode()
 		else if (displayMode > DM_PULSE_WIDTH) {
 			displayMode = DM_DISPLAY_OFF;
 		}
+		isDirty = true;
 	}
 }
 
@@ -261,6 +270,9 @@ void debounce()
 	debouncer.attach_us(&changeDisplayMode, DEBOUNCE_DELAY); 
 }
 
+//-------------------------------------------------------------------------------------------------
+// Main loop
+//
 int main()
 {
 #if (UART_TRACE)
@@ -303,30 +315,37 @@ int main()
 	pulseWidth[2] = 65536;
 	
     while(1) {
-        CheckPin1.write(1);
-		switch (displayMode) {
-		case DM_TITLE:
-			displayTitle();
-			break;
-		case DM_NORMAL:
-			displayNormal();
-			break;
-		case DM_FREQUENCY:
-			displayFrequency();
-			break;
-		case DM_AMPLITUDE:
-			displayAmplitude();
-			break;
-		case DM_PULSE_WIDTH:
-			displayPulseWidth();
-			break;
-		case DM_DISPLAY_OFF:
-			displayOff();
-			break;
+		if (isDirty) {
+			
+			CheckPin1.write(1);
+			
+			switch (displayMode) {
+			case DM_TITLE:
+				displayTitle();
+				break;
+			case DM_NORMAL:
+				displayNormal();
+				break;
+			case DM_FREQUENCY:
+				displayFrequency();
+				break;
+			case DM_AMPLITUDE:
+				displayAmplitude();
+				break;
+			case DM_PULSE_WIDTH:
+				displayPulseWidth();
+				break;
+			case DM_DISPLAY_OFF:
+				displayOff();
+				break;
+			}
+			
+			//isDirty = false;
+			wait_ms(1);
+			
+			CheckPin1.write(0);
+			
+			x++;
 		}
-        CheckPin1.write(0);
-		
-        x++;
-        wait_ms(500);
     }
 }
