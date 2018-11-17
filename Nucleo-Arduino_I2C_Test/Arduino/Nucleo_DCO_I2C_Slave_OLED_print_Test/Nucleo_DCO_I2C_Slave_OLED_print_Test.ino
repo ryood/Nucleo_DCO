@@ -10,7 +10,7 @@
 #include <U8g2lib.h>
 #include "DataComFormat.h"
 
-#define UART_TRACE  (0)
+#define UART_TRACE  (1)
 
 #define TITLE_STR1  ("I2C Slave Test")
 #define TITLE_STR2  ("20181111")

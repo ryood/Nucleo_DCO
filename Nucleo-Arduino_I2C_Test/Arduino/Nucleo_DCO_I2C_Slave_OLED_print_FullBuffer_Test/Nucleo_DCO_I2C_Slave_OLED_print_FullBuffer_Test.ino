@@ -13,10 +13,7 @@
 #define UART_TRACE  (0)  // UART_TRACEを有効化(1)にすると、メモリーオーバーのためコンパイルできません。
 
 #define TITLE_STR1  ("I2C Slave Test")
-#define TITLE_STR2  ("20181111")
-
-#define I2C_ADDR   (0x08)
-#define I2C_CLOCK  (400000)
+#define TITLE_STR2  ("20181113")
 
 #define MASTER_TITLE_STR_LEN (32)
 
@@ -88,7 +85,7 @@ void setup()
   u8g2.sendBuffer();
     
   // I2C
-  Wire.begin(I2C_ADDR);         // join i2c bus with address #8
+  Wire.begin(I2C_ARDUINO_ADDR7);         // join i2c bus with address #8
   pinMode(A4, INPUT);           // disable pullup
   pinMode(A5, INPUT);           // disable pullup
   Wire.setClock(I2C_CLOCK);

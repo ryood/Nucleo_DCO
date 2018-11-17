@@ -22,6 +22,7 @@ Nucleo_DCO_Test19.1 + RotaryEncoder Callback（）使用
 Nucleo_DCO_Test20 + RotaryEncoder Callback（）使用, ADC読み取り、OLED表示をThreadに
 Nucleo_DCO_Test21 + OLED表示のみThread ADC読み取りをメインループに戻す
 Nucleo_DCO_Test22 + ADC読み取りのみThread OLED表示をメインループに戻す
+Nucleo_DCO_Test30 + ArduinoでOLED表示(I2C接続) ※動作しない
 
 ADC_VREF_Test01         ADC_VREFの読み取り
 AverageAnalogIN_Test01  AverageAnalogIn(移動平均付きAnalogIn)のテスト

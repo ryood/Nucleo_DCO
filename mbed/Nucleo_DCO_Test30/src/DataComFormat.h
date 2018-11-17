@@ -8,7 +8,7 @@
 #ifndef _DATA_COM_FORMAT_H_
 #define _DATA_COM_FORMAT_H_
 
-#define I2C_CLOCK (100000)
+#define I2C_CLOCK (400000)
 #define I2C_ARDUINO_ADDR7   (0x08)     // 7bit address
 #define I2C_ARDUINO_ADDR8   (0x08<<1)  // 8bit address
 

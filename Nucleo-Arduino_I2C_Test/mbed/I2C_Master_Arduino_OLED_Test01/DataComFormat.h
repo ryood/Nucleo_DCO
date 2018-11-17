@@ -8,6 +8,10 @@
 #ifndef _DATA_COM_FORMAT_H_
 #define _DATA_COM_FORMAT_H_
 
+#define I2C_CLOCK (100000)
+#define I2C_ARDUINO_ADDR7   (0x08)     // 7bit address
+#define I2C_ARDUINO_ADDR8   (0x08<<1)  // 8bit address
+
 #define OSC_NUM  (3)
 
 // display mode
@@ -17,6 +21,7 @@ enum {
 	DM_FREQUENCY   = 2,
 	DM_AMPLITUDE   = 3,
 	DM_PULSE_WIDTH = 4,
+	DM_MAX         = 5,
 	DM_TITLE_STR1  = 128,
 	DM_TITLE_STR2  = 129,
 	DM_TITLE_STR3  = 130,

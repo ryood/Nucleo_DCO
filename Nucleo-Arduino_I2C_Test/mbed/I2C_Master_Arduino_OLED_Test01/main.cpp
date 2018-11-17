@@ -8,14 +8,13 @@
 #include "mbed.h"
 #include "DataComFormat.h"
 
-#define UART_TRACE  (0)
+#define UART_TRACE  (1)
 
-#define I2C_CLOCK (400000)
-#define I2C_ARDUINO_ADDR   (0x08 << 1)  // 8bit address
 #define TITLE_STR1  ("I2C OLED Test")
 #define TITLE_STR2  (__DATE__)
 #define TITLE_STR3  (__TIME__)
 
+#define I2C_WAIT  (wait_ms(1))
 #define DEBOUNCE_DELAY       (50000)  // usec
 
 int displayMode = DM_TITLE;
@@ -66,40 +65,45 @@ void displayTitle()
 	strncpy(strBuffer, TITLE_STR1, len);
 	printf("%s %d %d\r\n", strBuffer, len, strlen(strBuffer));
 	uint8_t mode = DM_TITLE_STR1;
-	if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&mode, 1, true) != 0) {
+	if (I2cArduino.write(I2C_ARDUINO_ADDR8, (char *)&mode, 1, true) != 0) {
 		printf("%d I2C failure: mode %d\r\n", x, mode);
 	}
-	if (I2cArduino.write(I2C_ARDUINO_ADDR, strBuffer, len, false) != 0) {
+	I2C_WAIT;
+	if (I2cArduino.write(I2C_ARDUINO_ADDR8, strBuffer, len, false) != 0) {
 		printf("%d I2C failure: TitleStr1\r\n", x);
 	}
+	I2C_WAIT;
 	
 	strncpy(strBuffer, TITLE_STR2, len);
 	printf("%s %d %d\r\n", strBuffer, len, strlen(strBuffer));
 	mode = DM_TITLE_STR2;
-	if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&mode, 1, true) != 0) {
+	if (I2cArduino.write(I2C_ARDUINO_ADDR8, (char *)&mode, 1, true) != 0) {
 		printf("%d I2C failure: mode %d\r\n", x, mode);
 	}
-	if (I2cArduino.write(I2C_ARDUINO_ADDR, strBuffer, len, false) != 0) {
+	I2C_WAIT;
+	if (I2cArduino.write(I2C_ARDUINO_ADDR8, strBuffer, len, false) != 0) {
 		printf("%d I2C failure: TitleStr2\r\n", x);
 	}
-
+	I2C_WAIT;
+	
 	strncpy(strBuffer, TITLE_STR3, len);
 	printf("%s %d %d\r\n", strBuffer, len, strlen(strBuffer));
 	mode = DM_TITLE_STR3;
-	if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&mode, 1, true) != 0) {
+	if (I2cArduino.write(I2C_ARDUINO_ADDR8, (char *)&mode, 1, true) != 0) {
 		printf("%d I2C failure: mode %d\r\n", x, mode);
 	}
-	if (I2cArduino.write(I2C_ARDUINO_ADDR, strBuffer, len, false) != 0) {
+	I2C_WAIT;
+	if (I2cArduino.write(I2C_ARDUINO_ADDR8, strBuffer, len, false) != 0) {
 		printf("%d I2C failure: TitleStr3\r\n", x);
 	}
-	
-	wait_ms(1);
+	I2C_WAIT;
 	
 	// Title表示指示を送信
 	mode = DM_TITLE;
-	if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&mode, 1, false) != 0) {
+	if (I2cArduino.write(I2C_ARDUINO_ADDR8, (char *)&mode, 1, false) != 0) {
 		printf("%d I2C failure: mode %d\r\n", x, mode);
 	}
+	I2C_WAIT;
 }
 
 void displayNormal()
@@ -133,10 +137,11 @@ void displayNormal()
 #endif	
 	
 	uint8_t mode = DM_NORMAL;
-	if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&mode, 1, true) != 0) {
+	if (I2cArduino.write(I2C_ARDUINO_ADDR8, (char *)&mode, 1, true) != 0) {
 		printf("%d I2C failure: mode %d\r\n", x, mode);
 	}
-	if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&d, sizeof(d), false) != 0) {
+	I2C_WAIT;
+	if (I2cArduino.write(I2C_ARDUINO_ADDR8, (char *)&d, sizeof(d), false) != 0) {
 		printf("%d I2C failure: normalData\r\n", x);
 	}
 }
@@ -166,10 +171,11 @@ void displayFrequency()
 #endif
 
 	uint8_t mode = DM_FREQUENCY;
-	if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&mode, 1, true) != 0) {
+	if (I2cArduino.write(I2C_ARDUINO_ADDR8, (char *)&mode, 1, true) != 0) {
 		printf("%d I2C failure: mode %d\r\n", x, mode);
 	}
-	if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&d, sizeof(d), false) != 0) {
+	I2C_WAIT;
+	if (I2cArduino.write(I2C_ARDUINO_ADDR8, (char *)&d, sizeof(d), false) != 0) {
 		printf("%d I2C failure: frequencyData\r\n", x);
 	}
 }
@@ -197,10 +203,11 @@ void displayAmplitude()
 #endif
 
 	uint8_t mode = DM_AMPLITUDE;
-	if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&mode, 1, true) != 0) {
+	if (I2cArduino.write(I2C_ARDUINO_ADDR8, (char *)&mode, 1, true) != 0) {
 		printf("%d I2C failure: mode %d\r\n", x, mode);
 	}
-	if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&d, sizeof(d), false) != 0) {
+	I2C_WAIT;
+	if (I2cArduino.write(I2C_ARDUINO_ADDR8, (char *)&d, sizeof(d), false) != 0) {
 		printf("%d I2C failure: amplitudeData\r\n", x);
 	}
 }
@@ -224,10 +231,11 @@ void displayPulseWidth()
 #endif
 
 	uint8_t mode = DM_PULSE_WIDTH;
-	if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&mode, 1, true) != 0) {
+	if (I2cArduino.write(I2C_ARDUINO_ADDR8, (char *)&mode, 1, true) != 0) {
 		printf("%d I2C failure: mode %d\r\n", x, mode);
 	}
-	if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&d, sizeof(d), false) != 0) {
+	I2C_WAIT;
+	if (I2cArduino.write(I2C_ARDUINO_ADDR8, (char *)&d, sizeof(d), false) != 0) {
 		printf("%d I2C failure: pulseWidthData\r\n", x);
 	}
 }
@@ -239,11 +247,12 @@ void displayOff()
 #endif
 
 	uint8_t mode = DM_DISPLAY_OFF;
-	if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&mode, 1, true) != 0) {
+	if (I2cArduino.write(I2C_ARDUINO_ADDR8, (char *)&mode, 1, true) != 0) {
 		printf("%d I2C failure: mode %d\r\n", x, mode);
 	}
+	I2C_WAIT;
 	uint8_t message = false;
-	if (I2cArduino.write(I2C_ARDUINO_ADDR, (char *)&message, 1, false) != 0) {
+	if (I2cArduino.write(I2C_ARDUINO_ADDR8, (char *)&message, 1, false) != 0) {
 		printf("%d I2C failure: displayOff message\r\n", x);
 	}
 }
@@ -258,7 +267,7 @@ void changeDisplayMode()
 		if (displayMode > DM_DISPLAY_OFF) {
 			displayMode = 0;
 		}
-		else if (displayMode > DM_PULSE_WIDTH) {
+		else if (displayMode >= DM_MAX) {
 			displayMode = DM_DISPLAY_OFF;
 		}
 		isDirty = true;
@@ -341,7 +350,7 @@ int main()
 			}
 			
 			//isDirty = false;
-			wait_ms(1);
+			wait_ms(10);
 			
 			CheckPin1.write(0);
 			
