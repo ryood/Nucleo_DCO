@@ -40,3 +40,4 @@ Pot_Panel_Test01        POT_Panelの読み取りテスト：F446RE
 Pot_Panel_Test02        POT_Panelの読み取りテスト：F767ZI
 RotaryEncoder_Test01    RotaryEncoderのテスト
 RotaryEncoder_Test02    RotaryEncoder x 6のテスト
+RotaryEncoder_Test03    筐体に実装したRotaryEncoder x 6のテスト

@@ -24,8 +24,8 @@
 #include "wavetable_12bit_64k.h"
 #define COUNT_OF_ENTRIES  (65536)
 
-#define PIN_CHECK   (1)
-#define UART_TRACE  (1)
+#define PIN_CHECK   (0)
+#define UART_TRACE  (0)
 #define TITLE_STR1  ("DCO Test23")
 #define TITLE_STR2  (__DATE__)
 #define TITLE_STR3  (__TIME__)
