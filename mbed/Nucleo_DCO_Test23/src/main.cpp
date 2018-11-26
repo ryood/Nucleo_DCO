@@ -104,8 +104,8 @@ RotaryEncoder RotEnc6(PD_5,  PD_4,  0, WS_MAX - 1, WS_SIN);
 
 // LED
 DigitalOut Led1(PC_6);
-DigitalOut Led2(PB_13); // Recovering wiring fail
-DigitalOut Led3(PB_15); // Recovering wiring fail
+DigitalOut Led2(PB_15);
+DigitalOut Led3(PB_13);
 DigitalOut Led4(PB_12);
 
 #if (PIN_CHECK)
