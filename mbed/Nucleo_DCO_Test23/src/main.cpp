@@ -95,12 +95,12 @@ InterruptIn Button3(PE_10, PullUp);
 InterruptIn Button4(PE_12, PullUp);
 
 // Rotary Encoder
-RotaryEncoder RotEnc1(PC_8,  PC_9,  0, FREQUENCY_RANGE_MAX - 1, 4);
-RotaryEncoder RotEnc2(PC_10, PC_11, 0, FREQUENCY_RANGE_MAX - 1, 4);
-RotaryEncoder RotEnc3(PC_12, PD_2,  0, FREQUENCY_RANGE_MAX - 1, 4);
-RotaryEncoder RotEnc4(PG_2,  PG_3,  0, WS_MAX - 1, WS_SIN);
-RotaryEncoder RotEnc5(PD_7,  PD_6,  0, WS_MAX - 1, WS_SIN);
-RotaryEncoder RotEnc6(PD_5,  PD_4,  0, WS_MAX - 1, WS_SIN);
+RotaryEncoder RotEnc1(PC_8,  PC_9,  0, WS_MAX - 1, WS_SIN);
+RotaryEncoder RotEnc2(PC_10, PC_11, 0, WS_MAX - 1, WS_SIN);
+RotaryEncoder RotEnc3(PC_12, PD_2,  0, WS_MAX - 1, WS_SIN);
+RotaryEncoder RotEnc4(PG_2,  PG_3,  0, FREQUENCY_RANGE_MAX - 1, 4);
+RotaryEncoder RotEnc5(PD_7,  PD_6,  0, FREQUENCY_RANGE_MAX - 1, 4);
+RotaryEncoder RotEnc6(PD_5,  PD_4,  0, FREQUENCY_RANGE_MAX - 1, 4);
 
 // LED
 DigitalOut Led1(PC_6);
@@ -526,12 +526,12 @@ void readButtonParameters()
 
 void readRotEncParameters()
 {
-	frequencyRange[0] = RotEnc1.getVal();
-	frequencyRange[1] = RotEnc2.getVal();
-	frequencyRange[2] = RotEnc3.getVal();
-	waveShape[0]      = RotEnc4.getVal();
-	waveShape[1]      = RotEnc5.getVal();
-	waveShape[2]      = RotEnc6.getVal();
+	waveShape[0]      = RotEnc1.getVal();
+	waveShape[1]      = RotEnc2.getVal();
+	waveShape[2]      = RotEnc3.getVal();
+	frequencyRange[0] = RotEnc4.getVal();
+	frequencyRange[1] = RotEnc5.getVal();
+	frequencyRange[2] = RotEnc6.getVal();
 }
 
 //-------------------------------------------------------------------------------------------------
