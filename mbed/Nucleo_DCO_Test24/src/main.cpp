@@ -41,7 +41,7 @@
 #define INTERPOLATE_DIVISION (64)
 #define PRUNING_FACTOR       (1.05f)
 
-#define MASTER_FREQUENCY_OCT (3.0f)
+//#define MASTER_FREQUENCY_OCT (3.0f)
 
 #define INTERNAL_VOLTAGE     (1.22f)
 #define VOLTAGE_DIV_R1       (12.0f)
@@ -125,6 +125,7 @@ enum {
 	DM_FREQUENCY,
 	DM_AMPLITUDE,
 	DM_PULSE_WIDTH,
+	DM_DEBUG,
 	DM_MAX
 };
 
@@ -176,6 +177,8 @@ const double frequencyBase[FREQUENCY_RANGE_MAX] = {
 // Parameter
 
 double masterFrequency = 1000.0;
+float masterFrequencyVoltage;
+
 float masterAmplitude = 1.0f;
 
 double detune[OSC_NUM]
@@ -208,8 +211,11 @@ volatile bool isButtonPushed2 = false;
 volatile bool isButtonPushed3 = false;
 volatile bool isButtonPushed4 = false;
 
-// Power voltage
-volatile float powerVoltage;
+// Reference voltage
+volatile float vrefFactor;
+
+// PSU voltage
+volatile float psuVoltage;
 
 // Suppress ADC
 volatile bool isSuppressAdc = false;
@@ -256,12 +262,14 @@ inline double detuning(double frequency, double detune)
 
 void readAdcParameters()
 {
-	float f  = MASTER_FREQUENCY_OCT * iAdc11.get();
-
+	//float f  = MASTER_FREQUENCY_OCT * iAdc11.get();
+	masterFrequencyVoltage = iAdc11.get() * vrefFactor;
+	
 	// Frequency Range
-	masterFrequency = f * frequencyBase[frequencyRange[0]] + frequencyBase[frequencyRange[0]];
-	float f2 = f * frequencyBase[frequencyRange[1]] + frequencyBase[frequencyRange[1]];
-	float f3 = f * frequencyBase[frequencyRange[2]] + frequencyBase[frequencyRange[2]];
+	float power     = powf(2.0f, masterFrequencyVoltage);
+	masterFrequency = frequencyBase[frequencyRange[0]] * power;
+	float f2        = frequencyBase[frequencyRange[1]] * power;
+	float f3        = frequencyBase[frequencyRange[2]] * power;
 	
 	// OSC1
 	detune[0]     = iAdc1.get() * 2.0f - 1.0f;
@@ -491,12 +499,16 @@ void readAdc()
 	iAdc8.setNext(pruning(adcRead12bit(Adc8)));
 	iAdc9.setNext(pruning(adcRead12bit(Adc9)));
 	iAdc10.setNext(pruning(adcRead12bit(Adc10)));
-	iAdc11.setNext(pruning(adcRead12bit(Adc11)));
-	
+
+	// Master frequency
+	iAdc11.setNext(adcRead12bit(Adc11));
+
 	float vref = AdcVref.read();
-	float vrefFactor = INTERNAL_VOLTAGE / vref;
-	float v = Adc12.read();
-	powerVoltage = v * vrefFactor * VOLTAGE_DIVIDE;
+	vrefFactor = INTERNAL_VOLTAGE / vref;
+
+	// PSU Voltage
+	float vp = Adc12.read();
+	psuVoltage = vp * vrefFactor * VOLTAGE_DIVIDE;
 }
 
 void readButtonParameters()
@@ -572,7 +584,7 @@ void displayNormal(float fps)
 	sprintf(strBuffer, "FPS:%.1f", fps);
 	u8g2_DrawStr(&U8g2Handler, 4, 48, strBuffer);
 	
-	sprintf(strBuffer, "BAT:%4.1fV %s", powerVoltage, isSuppressAdc ? "xx" : "AD");
+	sprintf(strBuffer, "BAT:%4.1fV %s", psuVoltage, isSuppressAdc ? "xx" : "AD");
 	u8g2_DrawStr(&U8g2Handler, 4, 64, strBuffer);
 	
 	u8g2_SendBuffer(&U8g2Handler);
@@ -648,6 +660,23 @@ void displayOffMessage()
 	sprintf(strBuffer, "DISPLAY OFF"); 
 	u8g2_DrawStr(&U8g2Handler, 4, 24, strBuffer);
 	
+	u8g2_SendBuffer(&U8g2Handler);
+}
+
+void displayDebug()
+{
+	char strBuffer[20];
+
+	u8g2_ClearBuffer(&U8g2Handler);
+	u8g2_SetFont(&U8g2Handler, u8g2_font_10x20_mf);
+
+	sprintf(strBuffer, "vf:%f", vrefFactor); 
+	u8g2_DrawStr(&U8g2Handler, 0, 16, strBuffer);
+	sprintf(strBuffer, "vm:%f", masterFrequencyVoltage); 
+	u8g2_DrawStr(&U8g2Handler, 0, 32, strBuffer);
+	sprintf(strBuffer, "f:%lf", masterFrequency); 
+	u8g2_DrawStr(&U8g2Handler, 0, 48, strBuffer);
+
 	u8g2_SendBuffer(&U8g2Handler);
 }
 
@@ -760,6 +789,9 @@ int main()
 			case DM_PULSE_WIDTH:
 				displayPulseWidth();
 				break;
+			case DM_DEBUG:
+				displayDebug();
+				break;
 			}
 		}
 
@@ -779,7 +811,7 @@ int main()
 		pc.printf("MasterAmplitude:%1.3f\t", masterAmplitude);
 		pc.printf("DisplayMode:%d\t", displayMode);
 		pc.printf("%4.1f fps\t", count/elapseTime);
-		pc.printf("%5.2f V\t", powerVoltage);
+		pc.printf("%5.2f V\t", psuVoltage);
 		pc.printf("SuppressADC:%d\t", isSuppressAdc);
 		pc.printf("\r\n");
 #endif

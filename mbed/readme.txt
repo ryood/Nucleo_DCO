@@ -23,6 +23,7 @@ Nucleo_DCO_Test20 + RotaryEncoder Callback（）使用, ADC読み取り、OLED�
 Nucleo_DCO_Test21 + OLED表示のみThread ADC読み取りをメインループに戻す
 Nucleo_DCO_Test22 + ADC読み取りのみThread OLED表示をメインループに戻す
 Nucleo_DCO_Test23 + 筐体作製のためピンアサインを変更
+Nucleo_DCO_Test24 + Master Frequencyの読み取りをVolt/Hzに変更
 
 Nucleo_DCO_Test30 + ArduinoでOLED表示(I2C接続) ※動作しない
 
